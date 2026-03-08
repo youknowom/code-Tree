@@ -1,89 +1,67 @@
-// import Link from "next/link";
-
-// export default function NotFound() {
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white font-game px-4">
-//       {/* 404 Animation */}
-//       <video
-//         src="/animations/404.mp4"
-//         autoPlay
-//         loop
-//         muted
-//         playsInline
-//         className="w-[260px] h-[260px] mb-6"
-//       />
-
-//       <h1 className="text-2xl mb-2 tracking-widest">SOMETHING WENT WRONG</h1>
-
-//       <p className="text-gray-400 mb-6 text-center">
-//         You entered a wrong path 🚧
-//       </p>
-
-//       <Link
-//         href="/"
-//         className="px-6 py-3 border-2 border-white hover:bg-white hover:text-black transition-all"
-//       >
-//         GO HOME
-//       </Link>
-//     </div>
-//   );
-// }
-
-// // import Link from "next/link";
-// // import RedPixelDino from "@/components/RedPixelDino";
-
-// // export default function NotFound() {
-// //   return (
-// //     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white font-game px-4">
-// //       <RedPixelDino />
-
-// //       <p className="text-red-500 text-lg tracking-widest mb-2">
-// //         PAGE NOT FOUND
-// //       </p>
-
-// //       <p className="text-gray-400 mb-6 text-center">
-// //         You entered a wrong path 🚧
-// //       </p>
-
-// //       <Link
-// //         href="/"
-// //         className="px-6 py-3 border-2 border-white hover:bg-white hover:text-black transition-all"
-// //       >
-// //         GO HOME
-// //       </Link>
-// //     </div>
-// //   );
-// // }
-
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Home, Search, Code2 } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
-      {/* Rotating Cookie */}
-      <div className="mb-6 animate-spin-normal">
-        <Image
-          src="/cookie.png"
-          alt="404 Cookie"
-          width={200}
-          height={200}
-          priority
+    <div className="min-h-screen bg-[var(--bg-page)] flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: `linear-gradient(oklch(1 0 0 / 0.5) 1px, transparent 1px), linear-gradient(to right, oklch(1 0 0 / 0.5) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full opacity-15 blur-[100px]"
+          style={{ background: "radial-gradient(ellipse, oklch(0.76 0.18 85) 0%, transparent 70%)" }}
         />
       </div>
 
-      <h1 className="text-2xl mb-2 tracking-widest font-bold">
-        SOMETHING WENT WRONG
-      </h1>
+      <div className="relative z-10 text-center">
+        {/* 404 visual */}
+        <div className="mb-6 relative inline-block">
+          <div className="text-[140px] sm:text-[180px] font-black leading-none gradient-text-brand opacity-20 select-none">
+            404
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-3xl gradient-brand flex items-center justify-center shadow-2xl shadow-amber-400/30">
+              <Code2 className="w-10 h-10 text-[oklch(0.1_0.005_264)]" />
+            </div>
+          </div>
+        </div>
 
-      <p className="text-gray-400 mb-6 text-center text-lg">
-        You entered a wrong path 🚧
-      </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--fg)] mb-3">
+          Page not found
+        </h1>
+        <p className="text-[var(--fg-subtle)] text-base mb-8 max-w-sm">
+          Looks like this path doesn&apos;t exist. Let&apos;s get you back on track 🚀
+        </p>
 
-      <Button asChild variant="pixel" className="font-semibold text-xl">
-        <Link href="/">GO HOME</Link>
-      </Button>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button
+            asChild
+            className="gradient-brand text-[oklch(0.1_0.005_264)] font-semibold border-0 hover:opacity-90 shadow-lg shadow-amber-400/20 gap-2"
+          >
+            <Link href="/">
+              <Home className="w-4 h-4" />
+              Go Home
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="bg-white/4 border-[var(--border-strong)] text-[var(--fg-muted)] hover:bg-[var(--overlay-8)] hover:text-white hover:border-white/20 gap-2"
+          >
+            <Link href="/courses">
+              <Search className="w-4 h-4" />
+              Browse Courses
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

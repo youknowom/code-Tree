@@ -3,78 +3,122 @@
 import * as Clerk from "@clerk/elements/common";
 import * as SignIn from "@clerk/elements/sign-in";
 import Image from "next/image";
+import Link from "next/link";
+import { Code2, Sparkles } from "lucide-react";
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen grid w-full items-center bg-zinc-100 px-4 font-mono text-sm">
-      <SignIn.Root>
-        <SignIn.Step
-          name="start"
-          className="mx-auto w-full sm:w-96 space-y-6 bg-white px-4 py-8 border-4 border-black shadow-[8px_8px_0_0_#000]"
-        >
-          <header className="text-cente flex flex-col items-center">
-            <Image src={"/logo.png"} alt="logo" width={40} height={40} />
-            <h1 className="mt-3 text-base font-bold tracking-wide text-black uppercase">
-              Sign in to Code Tree
-            </h1>
-          </header>
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.025]"
+          style={{
+            backgroundImage: `linear-gradient(var(--border-default) 1px, transparent 1px), linear-gradient(to right, var(--border-default) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[100px] opacity-20 dark:opacity-25"
+          style={{ background: "radial-gradient(ellipse, oklch(0.76 0.18 85) 0%, transparent 70%)" }}
+        />
+      </div>
 
-          <Clerk.GlobalError className="block text-sm text-red-500" />
-
-          {/* GOOGLE LOGIN */}
-          <Clerk.Connection
-            name="google"
-            className="flex w-full items-center justify-center gap-3 px-4 py-2 bg-yellow-400 border-2 border-black shadow-[4px_4px_0_0_#000] active:translate-y-[2px] active:shadow-none font-bold"
-          >
-            <span className="text-black">Login with Google</span>
-          </Clerk.Connection>
-
-          {/* EMAIL & PASSWORD */}
-          <div className="space-y-4">
-            <Clerk.Field name="identifier" className="space-y-1">
-              <Clerk.Label className="font-bold text-black uppercase">
-                Email
-              </Clerk.Label>
-              <Clerk.Input
-                type="email"
-                required
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[3px_3px_0_0_#000] outline-none focus:border-yellow-500"
-              />
-              <Clerk.FieldError className="text-sm text-red-500" />
-            </Clerk.Field>
-
-            <Clerk.Field name="password" className="space-y-1">
-              <Clerk.Label className="font-bold text-black uppercase">
-                Password
-              </Clerk.Label>
-              <Clerk.Input
-                type="password"
-                required
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[3px_3px_0_0_#000] outline-none focus:border-yellow-500"
-              />
-              <Clerk.FieldError className="text-sm text-red-500" />
-            </Clerk.Field>
+      {/* Card */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-[var(--border-default)] mb-4 flex items-center justify-center bg-amber-400/10">
+            <Image src="/logo.png" alt="logo" width={44} height={44} className="object-contain" />
           </div>
+          <h1 className="text-2xl font-bold gradient-text-brand">Welcome back</h1>
+          <p className="text-sm text-[var(--fg-muted)] mt-1">Sign in to continue your journey</p>
+        </div>
 
-          {/* SUBMIT BUTTON */}
-          <SignIn.Action
-            submit
-            className="w-full px-4 py-2 bg-yellow-400 border-2 border-black shadow-[4px_4px_0_0_#000] active:translate-y-[2px] active:shadow-none text-black font-bold uppercase"
+        <SignIn.Root>
+          <SignIn.Step
+            name="start"
+            className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] shadow-[var(--shadow-lg)] p-6 sm:p-8 space-y-5"
           >
-            Sign In
-          </SignIn.Action>
+            <Clerk.GlobalError className="block text-sm text-rose-500 bg-rose-50 dark:bg-rose-400/10 border border-rose-200 dark:border-rose-400/20 rounded-xl px-4 py-2.5" />
 
-          <p className="text-center text-xs text-black">
-            No account?{" "}
-            <Clerk.Link
-              navigate="sign-up"
-              className="font-bold underline underline-offset-2 hover:text-yellow-600"
+            {/* Google */}
+            <Clerk.Connection
+              name="google"
+              className="flex w-full items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[var(--overlay-4)] border border-[var(--border-default)] text-[var(--fg-muted)] font-semibold text-sm hover:bg-[var(--overlay-8)] hover:text-[var(--fg)] hover:border-[var(--border-strong)] transition-all duration-200"
             >
-              Create an account
-            </Clerk.Link>
-          </p>
-        </SignIn.Step>
-      </SignIn.Root>
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Continue with Google
+            </Clerk.Connection>
+
+            {/* Divider */}
+            <div className="relative flex items-center gap-3">
+              <div className="flex-1 h-px bg-[var(--border-default)]" />
+              <span className="text-xs text-[var(--fg-subtle)] font-medium">or continue with email</span>
+              <div className="flex-1 h-px bg-[var(--border-default)]" />
+            </div>
+
+            {/* Email & Password */}
+            <div className="space-y-4">
+              <Clerk.Field name="identifier" className="space-y-1.5">
+                <Clerk.Label className="text-sm font-semibold text-[var(--fg-muted)] block">
+                  Email address
+                </Clerk.Label>
+                <Clerk.Input
+                  type="email"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all text-sm"
+                  placeholder="you@example.com"
+                />
+                <Clerk.FieldError className="text-xs text-rose-500 dark:text-rose-400" />
+              </Clerk.Field>
+
+              <Clerk.Field name="password" className="space-y-1.5">
+                <Clerk.Label className="text-sm font-semibold text-[var(--fg-muted)] block">
+                  Password
+                </Clerk.Label>
+                <Clerk.Input
+                  type="password"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--fg)] placeholder:text-[var(--fg-subtle)] outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all text-sm"
+                  placeholder="••••••••"
+                />
+                <Clerk.FieldError className="text-xs text-rose-500 dark:text-rose-400" />
+              </Clerk.Field>
+            </div>
+
+            {/* Submit */}
+            <SignIn.Action
+              submit
+              className="w-full py-3 rounded-xl gradient-brand text-[oklch(0.1_0.005_264)] font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-amber-400/20"
+            >
+              Sign In
+            </SignIn.Action>
+
+            <p className="text-center text-sm text-[var(--fg-subtle)]">
+              Don&apos;t have an account?{" "}
+              <Clerk.Link
+                navigate="sign-up"
+                className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300 transition-colors"
+              >
+                Create account
+              </Clerk.Link>
+            </p>
+          </SignIn.Step>
+        </SignIn.Root>
+
+        <p className="text-center text-xs text-[var(--fg-subtle)] mt-6">
+          By signing in, you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-[var(--fg)] transition-colors">Terms</Link>
+          {" & "}
+          <Link href="/privacy" className="underline hover:text-[var(--fg)] transition-colors">Privacy Policy</Link>
+        </p>
+      </div>
     </div>
   );
 }

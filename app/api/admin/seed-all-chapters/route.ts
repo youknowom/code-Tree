@@ -1891,8 +1891,8 @@ export async function GET() {
         courseId: courseId,
         chapterId: chapter.id,
         name: chapter.name,
-        desc: chapter.desc,
-        exercises: JSON.stringify(chapter.exercises),
+        description: chapter.desc,
+        exercises: chapter.exercises,
       }));
 
       await db.insert(courseChaptersTable).values(chaptersToInsert);

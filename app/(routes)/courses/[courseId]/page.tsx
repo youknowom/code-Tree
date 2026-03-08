@@ -34,16 +34,16 @@ function CourseDetail() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[oklch(0.09_0.008_264)]">
       <CourseDetailbanner
         loading={loading}
         courseDetail={courseDetail}
         refreshData={getCourseDetail}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 px-4 sm:px-6 md:px-12 lg:px-24 py-8 lg:py-12 max-w-[1600px] mx-auto">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-6 py-8 lg:py-10 items-start">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
           <CourseChappter
             loading={loading}
             courseDetail={courseDetail}
@@ -52,7 +52,7 @@ function CourseDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="lg:sticky lg:top-6 lg:self-start space-y-6">
+        <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
           <CourseStatus courseDetail={courseDetail} loading={loading} />
           <UpgradeToPro />
           <CommunityHelpSection />
