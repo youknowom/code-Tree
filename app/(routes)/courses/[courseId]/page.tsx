@@ -27,23 +27,23 @@ function CourseDetail() {
       const res = await axios.get(`/api/course?courseId=${courseId}`);
       setCourseDetail(res.data);
     } catch (error) {
-      console.error(error);
+      // Error handled by UI feedback
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-[oklch(0.09_0.008_264)]">
       <CourseDetailbanner
         loading={loading}
         courseDetail={courseDetail}
         refreshData={getCourseDetail}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 md:px-24 lg:px-36 py-10">
-        {/* LEFT */}
-        <div className="lg:col-span-2">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-6 py-8 lg:py-10 items-start">
+        {/* Main Content */}
+        <div className="space-y-6">
           <CourseChappter
             loading={loading}
             courseDetail={courseDetail}
@@ -51,8 +51,8 @@ function CourseDetail() {
           />
         </div>
 
-        {/* RIGHT */}
-        <div className="lg:sticky lg:top-24 h-fit space-y-6">
+        {/* Sidebar */}
+        <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
           <CourseStatus courseDetail={courseDetail} loading={loading} />
           <UpgradeToPro />
           <CommunityHelpSection />

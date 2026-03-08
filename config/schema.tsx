@@ -25,6 +25,7 @@ export const coursesTable = pgTable("courses", {
   bannerImage: varchar("banner_image", { length: 500 }).notNull(),
   level: varchar("level", { length: 50 }).default("Beginner"),
   tags: varchar("tags", { length: 255 }),
+  editorType: varchar("editor_type", { length: 255 }),
 });
 
 /* COURSE CHAPTERS */

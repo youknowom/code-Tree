@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/tooltip";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, Lock, CheckCircle2, BookOpen, Star, Crown } from "lucide-react";
 import { fireConfetti } from "@/components/ConfettiBlast";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 
 type Props = {
   loading: boolean;
@@ -26,9 +28,10 @@ type Props = {
 };
 
 function CourseChapter({ loading, courseDetail, refreshData }: Props) {
-  const [completingExercise, setCompletingExercise] = useState<string | null>(
-    null
-  );
+  const { has } = useAuth();
+  const hasPremiumAccess = has && has({ plan: "pro" });
+
+  const [completingExercise, setCompletingExercise] = useState<string | null>(null);
 
   const handleCompleteExercise = async (
     chapterId: number,
@@ -47,7 +50,6 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
       });
       const alreadyCompleted = res.data?.alreadyCompleted;
 
-      // Only celebrate on first-time completion
       if (!alreadyCompleted) {
         fireConfetti();
         toast.success(`Exercise completed! +${xp}xp earned!`);
@@ -55,49 +57,72 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
 
       refreshData();
     } catch (error) {
-      console.error(error);
       toast.error("Failed to complete exercise");
     } finally {
       setCompletingExercise(null);
     }
   };
 
-  const EnableExercise = (
-    chapterIndex: number,
-    exerciseIndex: number,
-    chapterExercisesLength: number
-  ) => {
-    // User must be enrolled to do exercises
-    if (!courseDetail?.userEnrolled) {
-      return false;
-    }
+  const EnableExercise = (currentChapterId: number, currentExerciseId: number) => {
+    if (!courseDetail?.userEnrolled) return false;
+    if (!courseDetail.chapters) return false;
+
+    const chapterIndex = courseDetail.chapters.findIndex(
+      (ch) => ch.chapterId === currentChapterId
+    );
+    if (chapterIndex >= 2 && !hasPremiumAccess) return false;
 
     const completed = courseDetail?.completedExcercises;
 
-    // If nothing is completed, enable FIRST exercise ONLY
     if (!completed || completed.length === 0) {
-      return chapterIndex === 0 && exerciseIndex === 0;
+      const firstChapter = courseDetail.chapters?.[0];
+      return (
+        firstChapter &&
+        currentChapterId === firstChapter.chapterId &&
+        currentExerciseId === 1
+      );
     }
 
-    // last completed
+    const isAlreadyCompleted = completed.find(
+      (item) =>
+        item.chapterId === currentChapterId && item.exerciseId === currentExerciseId
+    );
+    if (isAlreadyCompleted) return true;
+
     const last = completed[completed.length - 1];
+    const lastCompletedChapter = courseDetail.chapters?.find(
+      (ch) => ch.chapterId === last.chapterId
+    );
 
-    // Convert to global exercise number
-    const currentExerciseNumber =
-      chapterIndex * chapterExercisesLength + exerciseIndex + 1;
+    if (!lastCompletedChapter) return false;
 
-    const lastCompletedNumber =
-      (last.chapterId - 1) * chapterExercisesLength + last.exerciseId;
+    if (currentChapterId === last.chapterId) {
+      return currentExerciseId === last.exerciseId + 1;
+    }
 
-    return currentExerciseNumber === lastCompletedNumber + 1;
+    if (currentChapterId === last.chapterId + 1) {
+      const allPrevCompleted =
+        lastCompletedChapter.exercises.length === last.exerciseId;
+      return allPrevCompleted && currentExerciseId === 1;
+    }
+
+    return false;
+  };
+
+  const isExerciseComplted = (chapterId: number, exceriseId: number) => {
+    const completeChapterse = courseDetail?.completedExcercises;
+    const foundExercise = completeChapterse?.find(
+      (item) => item.chapterId == chapterId && item.exerciseId == exceriseId
+    );
+    return foundExercise ? true : false;
   };
 
   // Loading state
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="w-full h-[100px] rounded-2xl" />
+          <Skeleton key={i} className="w-full h-[72px] rounded-2xl shimmer" />
         ))}
       </div>
     );
@@ -106,115 +131,138 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
   // No chapters
   if (!courseDetail?.chapters?.length) {
     return (
-      <div className="p-6 border-2 border-zinc-800 rounded-2xl bg-zinc-900">
-        <p className="text-muted-foreground text-center">
-          No chapters available
-        </p>
+      <div className="flex flex-col items-center gap-3 py-12 rounded-2xl border border-white/8 border-dashed bg-[oklch(0.12_0.01_264)] text-center">
+        <BookOpen className="w-10 h-10 text-white/20" />
+        <p className="text-white/40 text-sm">No chapters available yet</p>
       </div>
     );
   }
 
-  const isExerciseComplted = (chapterId: number, exceriseId: number) => {
-    const completeChapterse = courseDetail?.completedExcercises;
-
-    const foundExercise = completeChapterse?.find(
-      (item) => item.chapterId == chapterId && item.exerciseId == exceriseId
-    );
-    return foundExercise ? true : false;
-  };
-
   return (
-    <div className="p-6 border-2 border-zinc-800 rounded-2xl bg-zinc-900">
-      <Accordion type="single" collapsible className="space-y-3">
+    <div className="rounded-2xl border border-white/8 bg-[oklch(0.12_0.01_264)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/6">
+        <div className="w-9 h-9 rounded-xl bg-amber-400/8 border border-amber-400/15 flex items-center justify-center">
+          <BookOpen className="w-4 h-4 text-amber-400" />
+        </div>
+        <div>
+          <h2 className="font-bold text-white">Course Chapters</h2>
+          <p className="text-xs text-white/30">
+            {courseDetail.chapters.length} chapters
+          </p>
+        </div>
+      </div>
+
+      <Accordion type="single" collapsible className="divide-y divide-white/6">
         {courseDetail.chapters.map((chapter, index) => (
           <AccordionItem
             key={index}
             value={`chapter-${index}`}
-            className="border border-zinc-800 rounded-xl overflow-hidden"
+            className="border-0"
           >
-            <AccordionTrigger className="flex items-center gap-4 px-4 py-4 hover:bg-zinc-800 transition">
-              {/* Chapter Number */}
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-zinc-700 text-white font-bold">
-                {index + 1}
-              </div>
+            <div className="flex items-center">
+              <AccordionTrigger className="flex items-center gap-4 px-5 py-4 hover:bg-white/4 transition-colors w-full text-left [&>svg]:ml-auto [&>svg]:shrink-0">
+                {/* Chapter number */}
+                <div className={cn(
+                  "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm",
+                  index < 2
+                    ? "gradient-brand text-[oklch(0.1_0.005_264)]"
+                    : hasPremiumAccess
+                      ? "gradient-brand text-[oklch(0.1_0.005_264)]"
+                      : "bg-white/6 border border-white/10 text-white/30"
+                )}>
+                  {index + 1}
+                </div>
 
-              {/* Chapter Title */}
-              <span className="text-xl font-semibold text-left flex-1">
-                {chapter?.name}
-              </span>
-            </AccordionTrigger>
+                <div className="flex-1 text-left min-w-0">
+                  <span className="font-semibold text-white/90 text-base line-clamp-1">
+                    {chapter?.name}
+                  </span>
+                  <p className="text-xs text-white/30 mt-0.5">
+                    {chapter?.exercises?.length || 0} exercises
+                  </p>
+                </div>
+              </AccordionTrigger>
 
-            <AccordionContent className="px-6 py-4 text-gray-400 bg-zinc-950">
-              <div className="p-7 bg-zinc-900 rounded-2xl">
+              {/* Pro badge */}
+              {!hasPremiumAccess && index >= 2 && (
+                <div className="px-4 shrink-0">
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-bold">
+                    <Crown className="w-3 h-3" />
+                    PRO
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <AccordionContent className="border-t border-white/6">
+              <div className="divide-y divide-white/4">
                 {chapter?.exercises.map((exc, indexExc) => (
                   <div
                     key={`${chapter.chapterId}-${indexExc}`}
-                    className="flex items-center justify-between mb-7"
+                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/3 transition-colors"
                   >
-                    <div className="flex items-center gap-10 font-game">
-                      <h2 className="text-3xl">Excercise {indexExc + 1}</h2>
-                      <h2 className="text-3xl">{exc.name}</h2>
+                    {/* Exercise number */}
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center text-xs font-bold text-white/40">
+                      {indexExc + 1}
                     </div>
 
-                    {isExerciseComplted(chapter?.chapterId, indexExc + 1) ? (
-                      <Button
-                        variant={"pixel"}
-                        className="bg-green-600"
-                        disabled
-                      >
-                        Completed
-                      </Button>
-                    ) : EnableExercise(
-                        index,
-                        indexExc,
-                        chapter?.exercises?.length
-                      ) ? (
-                      <Link
-                        href={
-                          "/courses/" +
-                          courseDetail?.courseId +
-                          "/" +
-                          chapter?.chapterId +
-                          "/" +
-                          exc?.slug
-                        }
-                      >
-                        <Button
-                          variant={"pixel"}
-                          onClick={() =>
-                            handleCompleteExercise(
-                              chapter?.chapterId,
-                              indexExc + 1,
-                              exc?.xp
-                            )
-                          }
-                          disabled={
-                            completingExercise ===
-                            `${chapter?.chapterId}-${indexExc + 1}`
+                    {/* Exercise info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white/80 truncate">
+                        {exc.name}
+                      </p>
+                      <p className="text-xs text-white/30 mt-0.5 flex items-center gap-1">
+                        <Star className="w-3 h-3 text-amber-400/60" />
+                        {exc.xp} XP
+                      </p>
+                    </div>
+
+                    {/* Action button */}
+                    <div className="shrink-0">
+                      {isExerciseComplted(chapter?.chapterId, indexExc + 1) ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-400/10 border border-emerald-400/20">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-xs font-semibold text-emerald-400">Done</span>
+                        </div>
+                      ) : EnableExercise(chapter?.chapterId, indexExc + 1) ? (
+                        <Link
+                          href={
+                            "/courses/" +
+                            courseDetail?.courseId +
+                            "/" +
+                            chapter?.chapterId +
+                            "/" +
+                            exc?.slug
                           }
                         >
-                          {completingExercise ===
-                          `${chapter?.chapterId}-${indexExc + 1}` ? (
-                            <Loader2Icon className="animate-spin" />
-                          ) : (
-                            `${exc?.xp}xp`
-                          )}
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="pixelDisabled">???</Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-game text-lg">
-                            {courseDetail?.userEnrolled
-                              ? "Complete previous exercises first"
-                              : "Please Enroll First"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+                          <Button
+                            size="sm"
+                            className="gradient-brand text-[oklch(0.1_0.005_264)] font-semibold border-0 hover:opacity-90 h-8 px-3 text-xs"
+                          >
+                            Start · {exc?.xp}xp
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white/4 border border-white/8 text-white/25 cursor-not-allowed">
+                              <Lock className="w-3.5 h-3.5" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            className="max-w-[220px] bg-[oklch(0.15_0.01_264)] border-white/10 text-white/80 text-xs"
+                            side="left"
+                          >
+                            {!courseDetail?.userEnrolled
+                              ? "Enroll in this course to start learning"
+                              : index >= 2 && !hasPremiumAccess
+                                ? "Upgrade to Pro to unlock chapters 3+"
+                                : "Complete previous exercises first"}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

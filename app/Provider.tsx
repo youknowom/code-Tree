@@ -36,11 +36,7 @@ function Provider({
   return (
     <NextThemesProvider {...props}>
       <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-        {/* Header */}
-
-        <div className="flex flex-col items-center">
-          <Header />
-        </div>
+        <Header />
         {children}
       </UserDetailContext.Provider>
     </NextThemesProvider>
