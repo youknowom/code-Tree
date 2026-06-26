@@ -15,6 +15,7 @@ import {
 import { CourseExercise } from "../[exerciseslug]/page";
 import { nightOwl } from "@codesandbox/sandpack-themes";
 import { useParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { toast } from "sonner";
 import {
@@ -196,6 +197,7 @@ const PreviewToolbar = () => {
 // ── Main CodeEditor ──
 function CodeEditor({ courseExerciseData, loading }: Props) {
   const { exerciseslug, chapterId } = useParams();
+  const { isSignedIn } = useUser();
 
   const exerciseIndex = courseExerciseData?.exercises?.findIndex(
     (item) => item.slug === exerciseslug
@@ -208,6 +210,15 @@ function CodeEditor({ courseExerciseData, loading }: Props) {
   );
 
   const onCompleteExercise = async () => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to save your progress.", {
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/sign-in",
+        },
+      });
+      return;
+    }
     if (exerciseIndex < 0 || !courseExerciseData) return;
     try {
       const res = await axios.post("/api/exercise/complete", {
@@ -225,8 +236,12 @@ function CodeEditor({ courseExerciseData, loading }: Props) {
         );
         setTimeout(() => window.location.reload(), 1200);
       }
-    } catch {
-      toast.error("Failed to submit. Please try again.");
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        toast.error("Please sign in to save your progress.");
+      } else {
+        toast.error("Failed to submit. Please try again.");
+      }
     }
   };
 

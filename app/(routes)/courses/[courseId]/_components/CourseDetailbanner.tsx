@@ -70,6 +70,7 @@ function CourseDetailbanner({ loading, courseDetail, refreshData }: Props) {
         src={imageSrc}
         alt={`${courseDetail.title || "Course"} banner`}
         fill
+        unoptimized
         className="object-cover"
         priority
         sizes="100vw"

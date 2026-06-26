@@ -129,6 +129,7 @@ function CourseCardItem({ course, smallerCard }: { course: Course, smallerCard: 
           src={imgSrc ? imgSrc : "/cookie.png"}
           alt={course.title}
           fill
+          unoptimized
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           onError={() => setImgSrc("/cookie.png")}
         />
