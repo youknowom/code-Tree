@@ -7,7 +7,6 @@ import CourseDetailbanner from "./_components/CourseDetailbanner";
 import { Course } from "../_components/CourseList";
 import CourseChappter from "./_components/CourseChappter";
 import CourseStatus from "./_components/CourseStatus";
-import UpgradeToPro from "../../dashboard/_components/UpgradeToPro";
 import CommunityHelpSection from "./_components/CommunityHelpSection";
 
 function CourseDetail() {
@@ -54,7 +53,6 @@ function CourseDetail() {
         {/* Sidebar */}
         <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
           <CourseStatus courseDetail={courseDetail} loading={loading} />
-          <UpgradeToPro />
           <CommunityHelpSection />
         </div>
       </div>

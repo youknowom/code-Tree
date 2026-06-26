@@ -1,6 +1,9 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, Code2, Sparkles, Star, BookOpen, Trophy, Play } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 const stats = [
   { value: "50K+", label: "Learners" },
@@ -16,6 +19,7 @@ const highlights = [
 ];
 
 function Hero() {
+  const { isSignedIn } = useUser();
   return (
     <section className="relative w-full min-h-screen overflow-hidden bg-[var(--bg-page)] flex flex-col">
       {/* ── Background layers ── */}
@@ -88,7 +92,7 @@ function Hero() {
             size="lg"
             className="gradient-brand text-[oklch(0.1_0.005_264)] font-semibold text-base px-8 h-12 shadow-xl shadow-amber-400/25 hover:opacity-90 transition-opacity border-0"
           >
-            <Link href="/sign-up" className="flex items-center gap-2">
+            <Link href={isSignedIn ? "/courses" : "/sign-up"} className="flex items-center gap-2">
               Start Learning Free
               <ArrowRight className="w-4 h-4" />
             </Link>

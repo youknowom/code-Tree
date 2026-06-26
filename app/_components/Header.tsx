@@ -79,9 +79,14 @@ export default function Header() {
                 <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", coursesDropdownOpen && "rotate-180")} />
               </Link>
 
-              {/* Dropdown */}
-              {coursesDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-[520px] rounded-2xl border bg-[var(--bg-card)] shadow-2xl overflow-hidden animate-fade-in-up border-[var(--border-default)]">
+              {/* Dropdown — pt-2 invisible bridge to prevent mouse-leave gap */}
+              <div
+                className={cn(
+                  "absolute top-full left-0 w-[520px] pt-1.5",
+                  coursesDropdownOpen ? "block" : "hidden"
+                )}
+              >
+                <div className="rounded-2xl border bg-[var(--bg-card)] shadow-2xl overflow-hidden animate-fade-in-up border-[var(--border-default)]">
                   <div className="p-3 grid grid-cols-2 gap-1 max-h-[380px] overflow-y-auto">
                     {courses.map((course) => (
                       <Link
@@ -113,7 +118,7 @@ export default function Header() {
                     </Link>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {navLinks.map((link) => (

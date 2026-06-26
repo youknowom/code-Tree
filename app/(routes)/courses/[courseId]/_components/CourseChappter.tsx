@@ -15,11 +15,9 @@ import {
 } from "@/components/ui/tooltip";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2Icon, Lock, CheckCircle2, BookOpen, Star, Crown } from "lucide-react";
+import { Loader2Icon, Lock, CheckCircle2, BookOpen, Star } from "lucide-react";
 import { fireConfetti } from "@/components/ConfettiBlast";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import { cn } from "@/lib/utils";
 
 type Props = {
   loading: boolean;
@@ -28,9 +26,6 @@ type Props = {
 };
 
 function CourseChapter({ loading, courseDetail, refreshData }: Props) {
-  const { has } = useAuth();
-  const hasPremiumAccess = has && has({ plan: "pro" });
-
   const [completingExercise, setCompletingExercise] = useState<string | null>(null);
 
   const handleCompleteExercise = async (
@@ -66,11 +61,6 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
   const EnableExercise = (currentChapterId: number, currentExerciseId: number) => {
     if (!courseDetail?.userEnrolled) return false;
     if (!courseDetail.chapters) return false;
-
-    const chapterIndex = courseDetail.chapters.findIndex(
-      (ch) => ch.chapterId === currentChapterId
-    );
-    if (chapterIndex >= 2 && !hasPremiumAccess) return false;
 
     const completed = courseDetail?.completedExcercises;
 
@@ -163,14 +153,7 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
             <div className="flex items-center">
               <AccordionTrigger className="flex items-center gap-4 px-5 py-4 hover:bg-white/4 transition-colors w-full text-left [&>svg]:ml-auto [&>svg]:shrink-0">
                 {/* Chapter number */}
-                <div className={cn(
-                  "shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm",
-                  index < 2
-                    ? "gradient-brand text-[oklch(0.1_0.005_264)]"
-                    : hasPremiumAccess
-                      ? "gradient-brand text-[oklch(0.1_0.005_264)]"
-                      : "bg-white/6 border border-white/10 text-white/30"
-                )}>
+                <div className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm gradient-brand text-[oklch(0.1_0.005_264)]">
                   {index + 1}
                 </div>
 
@@ -183,16 +166,6 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
                   </p>
                 </div>
               </AccordionTrigger>
-
-              {/* Pro badge */}
-              {!hasPremiumAccess && index >= 2 && (
-                <div className="px-4 shrink-0">
-                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-bold">
-                    <Crown className="w-3 h-3" />
-                    PRO
-                  </span>
-                </div>
-              )}
             </div>
 
             <AccordionContent className="border-t border-white/6">
@@ -256,9 +229,7 @@ function CourseChapter({ loading, courseDetail, refreshData }: Props) {
                           >
                             {!courseDetail?.userEnrolled
                               ? "Enroll in this course to start learning"
-                              : index >= 2 && !hasPremiumAccess
-                                ? "Upgrade to Pro to unlock chapters 3+"
-                                : "Complete previous exercises first"}
+                              : "Complete previous exercises first"}
                           </TooltipContent>
                         </Tooltip>
                       )}
