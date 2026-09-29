@@ -7,7 +7,7 @@ import { completedExcercises, exercises } from "../../../_components/CourseList"
 import ContentSection from "../_components/ContentSection";
 import CodeEditor from "../_components/CodeEditor";
 import Link from "next/link";
-import Image from "next/image";
+import CodeTreeLogo from "@/components/CodeTreeLogo";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -45,9 +45,12 @@ type ExerciseData = {
 type ExerciseContent = {
   content: string;
   hint: string;
-  hintXp: string;
-  startCode: any;
+  hintXp?: string | number;
+  startCode?: any;
+  starterCode?: any;
   task: string;
+  regex?: string;
+  output?: string;
 };
 
 function Playground() {
@@ -113,12 +116,7 @@ function Playground() {
         {/* Left — Logo + problem list */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-7 h-7 rounded-lg overflow-hidden">
-              <Image src="/logo.png" alt="CodeTree" fill className="object-contain" />
-            </div>
-            <span className="text-sm font-bold gradient-text-brand hidden sm:block">
-              CodeTree
-            </span>
+            <CodeTreeLogo size="sm" />
           </Link>
 
           {/* Divider */}

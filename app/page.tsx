@@ -2,216 +2,314 @@ import React from "react";
 import type { Metadata } from "next";
 import Hero from "./_components/Hero";
 import Footer from "./_components/Footer";
-import { Code2, Zap, Trophy, Users, BookOpen, Target, Quote } from "lucide-react";
+import {
+  Code2,
+  Zap,
+  Trophy,
+  BookOpen,
+  Target,
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Layers,
+  Terminal,
+  Check,
+  X,
+  Laptop,
+} from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "CodeTree — Learn to Code Interactively",
+  title: "CodeTree — Practice-Driven Web Development & Interactive Coding",
   description:
-    "Master web development with hands-on exercises, a live code editor, and a gamified learning path. Learn HTML, CSS, JavaScript, React, Python, and Gen AI for free.",
+    "Master web development through interactive coding exercises, in-browser sandboxes, and immediate automated test feedback. Learn TypeScript, React, Next.js, HTML, CSS, JavaScript, and Python.",
   alternates: { canonical: "/" },
 };
 
-const features = [
+const learningSteps = [
   {
-    icon: <Code2 className="w-6 h-6" />,
-    title: "Live Code Editor",
-    description: "Write, run, and test code directly in your browser with our powerful interactive editor. No setup required.",
-    color: "text-amber-400",
-    bg: "bg-amber-400/8",
-    border: "border-amber-400/15",
+    step: "01",
+    title: "Digest the Concept",
+    desc: "Targeted, bite-sized lessons explaining one core pattern at a time. No 40-minute fluff videos.",
+    badge: "Concise Theory",
   },
   {
-    icon: <Zap className="w-6 h-6" />,
-    title: "Instant Feedback",
-    description: "Get real-time results as you code. No waiting, no setup — just pure learning momentum.",
-    color: "text-violet-400",
-    bg: "bg-violet-400/8",
-    border: "border-violet-400/15",
+    step: "02",
+    title: "Code in the Sandbox",
+    desc: "Immediately write code in a live, in-browser editor with zero local configuration or toolchain headaches.",
+    badge: "Hands-on Practice",
   },
   {
-    icon: <Trophy className="w-6 h-6" />,
-    title: "Earn XP & Badges",
-    description: "Level up as you learn. Collect experience points, unlock badges, and track your growth over time.",
-    color: "text-emerald-400",
-    bg: "bg-emerald-400/8",
-    border: "border-emerald-400/15",
-  },
-  {
-    icon: <BookOpen className="w-6 h-6" />,
-    title: "Structured Curriculum",
-    description: "Follow carefully crafted learning paths from beginner to advanced, covering all major technologies.",
-    color: "text-sky-400",
-    bg: "bg-sky-400/8",
-    border: "border-sky-400/15",
-  },
-  {
-    icon: <Target className="w-6 h-6" />,
-    title: "Bite-Sized Exercises",
-    description: "Short, focused challenges that fit into your schedule and build skills incrementally.",
-    color: "text-rose-400",
-    bg: "bg-rose-400/8",
-    border: "border-rose-400/15",
-  },
-  {
-    icon: <Users className="w-6 h-6" />,
-    title: "Community Support",
-    description: "Join thousands of learners in our Discord community. Ask questions, share projects, grow together.",
-    color: "text-orange-400",
-    bg: "bg-orange-400/8",
-    border: "border-orange-400/15",
+    step: "03",
+    title: "Pass Automated Assertions",
+    desc: "Run real test specs against your DOM or script. Get instant pass/fail feedback and earn verified XP.",
+    badge: "Instant Validation",
   },
 ];
 
-const techStack = [
-  "HTML", "CSS", "JavaScript", "React", "Python",
-  "Gen AI", "Machine Learning", "React Advanced",
+const comparisonData = [
+  {
+    aspect: "Retention & Mastery",
+    video: "Passive: ~15% recall after 48 hours",
+    codetree: "Active: High muscle memory through direct code writing",
+  },
+  {
+    aspect: "Setup & Tooling",
+    video: "Stuck in node/npm/vite config before line 1",
+    codetree: "Zero installation: in-browser Sandpack ready in 1 second",
+  },
+  {
+    aspect: "Feedback Loop",
+    video: "Guessing whether your code works",
+    codetree: "Automated test assertions with instant DOM feedback",
+  },
+  {
+    aspect: "Skill Progression",
+    video: "Mindless copying with no verification",
+    codetree: "Milestone badges, authentic XP, and structured track unlocks",
+  },
 ];
 
-const testimonials = [
+const featuredTracks = [
   {
-    quote: "CodeTree completely changed how I learn. The exercises are addictive and the instant feedback keeps me motivated every single day.",
-    name: "Sarah K.",
-    role: "Frontend Developer",
-    avatar: "SK",
-    color: "bg-amber-400",
+    title: "TypeScript Essentials",
+    level: "Intermediate",
+    tag: "TypeScript",
+    chapters: 6,
+    desc: "Master type annotations, interfaces, union types, and generics with compile-time safety.",
+    link: "/courses/5",
   },
   {
-    quote: "I went from zero coding knowledge to building React apps in 3 months. The gamified approach makes it so much easier to stay consistent.",
-    name: "Marcus T.",
-    role: "Career Switcher",
-    avatar: "MT",
-    color: "bg-violet-400",
+    title: "React 19 Beginner",
+    level: "Beginner",
+    tag: "React",
+    chapters: 12,
+    desc: "Learn components, props, state hooks, and component lifecycle by building UI pieces.",
+    link: "/courses/1",
   },
   {
-    quote: "The live code editor is incredible. You learn by doing, not just watching videos, and every exercise feels purposeful.",
-    name: "Priya M.",
-    role: "Computer Science Student",
-    avatar: "PM",
-    color: "bg-emerald-400",
+    title: "Next.js Fullstack",
+    level: "Intermediate",
+    tag: "Next.js",
+    chapters: 6,
+    desc: "App Router, Server vs Client Components, dynamic routes, and Server Actions.",
+    link: "/courses/8",
+  },
+  {
+    title: "Tailwind CSS Mastery",
+    level: "Beginner",
+    tag: "Tailwind",
+    chapters: 5,
+    desc: "Build responsive, modern UI cards, grids, and flex layouts with utility-first CSS.",
+    link: "/courses/6",
+  },
+  {
+    title: "JavaScript Core",
+    level: "Beginner",
+    tag: "JavaScript",
+    chapters: 12,
+    desc: "Data structures, DOM manipulation, async/await, and modern ES6+ patterns.",
+    link: "/courses/4",
+  },
+  {
+    title: "Python Fundamentals",
+    level: "Beginner",
+    tag: "Python",
+    chapters: 6,
+    desc: "Syntax, lists, dictionaries, loops, functions, and object-oriented programming.",
+    link: "/courses/7",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="bg-[var(--bg-page)]">
-      {/* Hero */}
+    <div className="bg-[var(--bg-page)] text-[var(--fg)] min-h-screen">
+      {/* ── 1. Hero Section ── */}
       <Hero />
 
-      {/* Features Section */}
-      <section className="relative py-24 px-4 sm:px-6" aria-labelledby="features-heading">
-        {/* Subtle separator line */}
-        <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-[var(--border-default)] to-transparent" />
+      {/* ── 2. The 3-Step Learning Loop ── */}
+      <section className="py-20 px-4 sm:px-6 border-y border-[var(--border-default)] bg-[var(--bg-elevated)]/40">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="chip mx-auto mb-5">
-              <Zap className="w-3.5 h-3.5" />
-              Why CodeTree
-            </div>
-            <h2
-              id="features-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--fg)] leading-tight"
-            >
-              Everything you need to{" "}
-              <span className="gradient-text-brand">level up your code</span>
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 block">
+              The Learning Loop
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--fg)]">
+              How you learn on CodeTree
             </h2>
-            <p className="mt-5 text-lg text-[var(--fg-subtle)] max-w-xl mx-auto leading-relaxed">
-              A complete learning ecosystem designed for modern developers, from first-timers to pros.
+            <p className="mt-3 text-sm sm:text-base text-[var(--fg-muted)]">
+              A deliberate cognitive loop engineered to build genuine software engineering fluency.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((feature, i) => (
-              <article
-                key={i}
-                className={`group flex flex-col gap-4 p-6 rounded-2xl border ${feature.border} bg-[var(--bg-card)] card-hover cursor-default`}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {learningSteps.map((step, idx) => (
+              <div
+                key={idx}
+                className="p-6 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] shadow-xs relative flex flex-col justify-between"
               >
-                <div
-                  className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center ${feature.color} ring-1 ${feature.border} shrink-0 transition-transform duration-300 group-hover:scale-110`}
-                >
-                  {feature.icon}
-                </div>
                 <div>
-                  <h3 className="text-lg font-bold text-[var(--fg)] mb-2">{feature.title}</h3>
-                  <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{feature.description}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-3xl font-black text-amber-500/20 font-mono">
+                      {step.step}
+                    </span>
+                    <span className="text-[11px] font-semibold text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                      {step.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--fg)] mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-[var(--fg-muted)] leading-relaxed">
+                    {step.desc}
+                  </p>
                 </div>
-              </article>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Tech Stack Section */}
-      <section className="py-16 px-4 sm:px-6 border-y border-[var(--border-subtle)]" aria-label="Technologies you will learn">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xs font-bold text-[var(--fg-subtle)] uppercase tracking-widest mb-8">
-            Technologies you&apos;ll master
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {techStack.map((tech, i) => (
-              <span
-                key={i}
-                className="px-4 py-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] text-[var(--fg-muted)] text-sm font-medium hover:bg-[var(--bg-elevated)] hover:text-[var(--fg)] hover:border-[var(--border-strong)] transition-all duration-200 cursor-default shadow-[var(--shadow-sm)]"
-              >
-                {tech}
+      {/* ── 3. Featured Tracks Showcase ── */}
+      <section className="py-20 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 block">
+                Structured Tracks
               </span>
-            ))}
-          </div>
-          <div className="mt-10">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--fg)]">
+                From First Tag to Production Fullstack
+              </h2>
+            </div>
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl gradient-brand text-[oklch(0.1_0.005_264)] font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-amber-400/20"
+              className="text-sm font-semibold text-amber-500 hover:text-amber-600 flex items-center gap-1 shrink-0"
             >
-              Explore All Courses →
+              View all 8 tracks <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 px-4 sm:px-6" aria-labelledby="testimonials-heading">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="chip mx-auto mb-5">
-              <Quote className="w-3.5 h-3.5" />
-              Learner Stories
-            </div>
-            <h2
-              id="testimonials-heading"
-              className="text-3xl sm:text-4xl font-bold text-[var(--fg)]"
-            >
-              Loved by{" "}
-              <span className="gradient-text-brand">developers worldwide</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {testimonials.map((t, i) => (
-              <blockquote
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featuredTracks.map((track, i) => (
+              <Link
                 key={i}
-                className="flex flex-col gap-5 p-6 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] card-hover"
+                href={track.link}
+                className="group p-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] hover:border-amber-500/40 hover:shadow-md transition-all flex flex-col justify-between"
               >
-                <Quote className="w-5 h-5 text-amber-400/40" />
-                <p className="text-sm text-[var(--fg-muted)] leading-relaxed flex-1">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-full ${t.color} flex items-center justify-center text-xs font-bold text-black shrink-0`}
-                  >
-                    {t.avatar}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                      {track.tag}
+                    </span>
+                    <span className="text-xs text-[var(--fg-subtle)] font-medium">
+                      {track.chapters} Chapters
+                    </span>
                   </div>
-                  <div>
-                    <cite className="text-sm font-semibold text-[var(--fg)] not-italic">{t.name}</cite>
-                    <p className="text-xs text-[var(--fg-subtle)]">{t.role}</p>
-                  </div>
-                </footer>
-              </blockquote>
+                  <h3 className="text-base font-bold text-[var(--fg)] group-hover:text-amber-500 transition-colors">
+                    {track.title}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-[var(--fg-muted)] leading-relaxed line-clamp-2">
+                    {track.desc}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs">
+                  <span className="text-[var(--fg-subtle)]">{track.level}</span>
+                  <span className="font-semibold text-amber-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                    Start Track <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── 4. Why Practice Beats Video Tutorials ── */}
+      <section className="py-20 px-4 sm:px-6 border-t border-[var(--border-default)] bg-[var(--bg-elevated)]/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 block">
+              Pedagogy & Science
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--fg)]">
+              Why passive tutorials fail
+            </h2>
+            <p className="mt-3 text-sm text-[var(--fg-muted)]">
+              Watching someone code creates an illusion of competence. Active retrieval in an editor builds real engineers.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border-default)]">
+              {/* Left: Video Tutorials */}
+              <div className="p-6 sm:p-8 space-y-4 bg-rose-500/3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-rose-500/15 text-rose-500 flex items-center justify-center font-bold text-xs">
+                    <X className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--fg)]">
+                    Passive Video Watching
+                  </h3>
+                </div>
+
+                <div className="space-y-3 pt-2 text-xs text-[var(--fg-muted)] leading-relaxed">
+                  <p>• Fast forward through syntax explanations without typing.</p>
+                  <p>• Constant pause-and-copy leads to syntax blindness.</p>
+                  <p>• Zero automated feedback on edge cases or typos.</p>
+                  <p>• Forgotten 3 days later when starting an empty project.</p>
+                </div>
+              </div>
+
+              {/* Right: CodeTree */}
+              <div className="p-6 sm:p-8 space-y-4 bg-emerald-500/3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold text-xs">
+                    <Check className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--fg)]">
+                    The CodeTree Method
+                  </h3>
+                </div>
+
+                <div className="space-y-3 pt-2 text-xs text-[var(--fg-muted)] leading-relaxed">
+                  <p>• Read 2-3 focused paragraphs, then write real code.</p>
+                  <p>• Sandpack execution tests your output in real browser runtime.</p>
+                  <p>• Automated assertion test harness validates every line.</p>
+                  <p>• Retain muscle memory, earn XP, and build momentum daily.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Final CTA Banner ── */}
+      <section className="py-20 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto rounded-3xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8 sm:p-14 text-center relative overflow-hidden shadow-lg">
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--fg)] tracking-tight">
+              Ready to write your first lines of code?
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-[var(--fg-muted)] leading-relaxed">
+              No credit card. No software downloads. Choose a track and start solving interactive challenges right in your browser.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Button
+                asChild
+                size="lg"
+                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm h-12 px-8 rounded-xl shadow-md border border-amber-400/30"
+              >
+                <Link href="/courses">Explore All Curriculum</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
       <Footer />
     </div>
   );

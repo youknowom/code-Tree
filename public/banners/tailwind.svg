@@ -1,0 +1,22 @@
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#0A1826"/>
+  <circle cx="400" cy="225" r="180" fill="#38BDF8" fill-opacity="0.08" filter="blur(60px)"/>
+  
+  <!-- Subtle Grid -->
+  <path d="M0 75H800M0 150H800M0 225H800M0 300H800M0 375H800" stroke="#132F4C" stroke-width="0.75" stroke-dasharray="4 6"/>
+  <path d="M100 0V450M200 0V450M300 0V450M400 0V450M500 0V450M600 0V450M700 0V450" stroke="#132F4C" stroke-width="0.75" stroke-dasharray="4 6"/>
+
+  <!-- Tailwind Waves Icon -->
+  <g transform="translate(320, 160) scale(1.4)">
+    <path d="M57 17.5C51.5 8 43.5 3 33 2.5C18.5 2 9 12 6.5 23C5 29.5 7.5 35.5 12 40C17.5 45.5 24.5 48.5 32 49C40 49.5 46.5 46 51 40C54.5 35 56.5 28.5 57 22.5" stroke="#38BDF8" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M84 37.5C78.5 28 70.5 23 60 22.5C45.5 22 36 32 33.5 43C32 49.5 34.5 55.5 39 60C44.5 65.5 51.5 68.5 59 69C67 69.5 73.5 66 78 60C81.5 55 83.5 48.5 84 42.5" stroke="#38BDF8" stroke-width="4.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Badge Overlay -->
+  <rect x="48" y="44" width="130" height="32" rx="16" fill="#38BDF8" fill-opacity="0.15" stroke="#38BDF8" stroke-opacity="0.4"/>
+  <text x="113" y="65" fill="#38BDF8" font-family="system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1">TAILWIND</text>
+
+  <!-- Title Bottom Left -->
+  <text x="48" y="380" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.5">Tailwind CSS Mastery</text>
+  <text x="48" y="408" fill="#94A3B8" font-family="system-ui, sans-serif" font-size="14" font-weight="500">Utility-First · Flexbox · Grid · Responsive Breakpoints</text>
+</svg>

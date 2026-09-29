@@ -1,7 +1,8 @@
 import { db } from "@/config/db";
 import { courseChaptersTable, coursesTable } from "@/config/schema";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAdmin } from "@/lib/adminAuth";
 
 // Course 1: React Beginner Chapters
 const REACT_CHAPTERS = [
@@ -1852,7 +1853,10 @@ const JAVASCRIPT_CHAPTERS = [
   },
 ];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await verifyAdmin(req);
+  if (!auth.authorized) return auth.response!;
+
   try {
     // Get all existing courses with their titles
     const existingCourses = await db

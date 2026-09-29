@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Provider from "./Provider";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -99,38 +98,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/dashboard"
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-    >
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <link rel="canonical" href={baseUrl} />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-inter`}
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="canonical" href={baseUrl} />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased font-inter`}
+      >
+        <Provider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange={false}
         >
-          <Provider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange={false}
-          >
-            {children}
-            <Analytics />
-            <Toaster
-              position="bottom-right"
-              theme="system"
-              toastOptions={{
-                className:
-                  "!bg-[var(--bg-card)] !border !border-[var(--border-default)] !text-[var(--fg)] !shadow-lg",
-              }}
-            />
-          </Provider>
-        </body>
-      </html>
-    </ClerkProvider>
+          {children}
+          <Analytics />
+          <Toaster
+            position="bottom-right"
+            theme="system"
+            toastOptions={{
+              className:
+                "!bg-[var(--bg-card)] !border !border-[var(--border-default)] !text-[var(--fg)] !shadow-lg",
+            }}
+          />
+        </Provider>
+      </body>
+    </html>
   );
 }

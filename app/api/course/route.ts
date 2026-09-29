@@ -1,19 +1,21 @@
 import { db } from "@/config/db";
 import {
+  certificatesTable,
   completedExercisesTable,
+  courseAssessmentsTable,
   courseChaptersTable,
   coursesTable,
   enrolledCoursesTable,
   usersTable,
 } from "@/config/schema";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/authHelper";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const courseId = searchParams.get("courseId");
-  const user = await currentUser();
+  const user = await getCurrentUser();
 
   if (courseId && courseId != "enrolled") {
     const parsedCourseId = parseInt(courseId, 10);
@@ -21,20 +23,40 @@ export async function GET(req: NextRequest) {
       .select()
       .from(coursesTable)
       .where(eq(coursesTable.courseId, parsedCourseId));
+
+    if (result.length === 0) {
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    }
+
     const chapterResult = await db
       .select()
       .from(courseChaptersTable)
-      .where(eq(courseChaptersTable.courseId, parsedCourseId));
+      .where(eq(courseChaptersTable.courseId, parsedCourseId))
+      .orderBy(asc(courseChaptersTable.chapterId));
+
+    // Fetch assessment info (excluding answers)
+    const assessmentResult = await db
+      .select({
+        id: courseAssessmentsTable.id,
+        courseId: courseAssessmentsTable.courseId,
+        title: courseAssessmentsTable.title,
+        description: courseAssessmentsTable.description,
+        passingScore: courseAssessmentsTable.passingScore,
+        timeLimitMinutes: courseAssessmentsTable.timeLimitMinutes,
+      })
+      .from(courseAssessmentsTable)
+      .where(eq(courseAssessmentsTable.courseId, parsedCourseId));
 
     let isEnrolledCourse = false;
     let enrollCourse: any[] = [];
     let completedExcercises: any[] = [];
+    let certificateInfo: any = null;
 
-    if (user?.primaryEmailAddress?.emailAddress) {
+    if (user?.email) {
       const dbUser = await db
         .select()
         .from(usersTable)
-        .where(eq(usersTable.email, user.primaryEmailAddress.emailAddress));
+        .where(eq(usersTable.email, user.email));
 
       if (dbUser.length > 0) {
         enrollCourse = await db
@@ -62,24 +84,43 @@ export async function GET(req: NextRequest) {
             desc(completedExercisesTable.courseId),
             desc(completedExercisesTable.exerciseId)
           );
+
+        // Fetch Certificate if issued
+        const cert = await db
+          .select()
+          .from(certificatesTable)
+          .where(
+            and(
+              eq(certificatesTable.courseId, parsedCourseId),
+              eq(certificatesTable.userId, dbUser[0].id)
+            )
+          )
+          .limit(1);
+
+        if (cert.length > 0) {
+          certificateInfo = cert[0];
+        }
       }
     }
+
     return NextResponse.json({
       ...result[0],
       chapters: chapterResult,
       userEnrolled: isEnrolledCourse,
       courseEnrolledInfo: enrollCourse[0],
       completedExcercises: completedExcercises,
+      assessment: assessmentResult[0] || null,
+      certificate: certificateInfo,
     });
   } else if (courseId == "enrolled") {
-    if (!user?.primaryEmailAddress?.emailAddress) {
+    if (!user?.email) {
       return NextResponse.json([]);
     }
 
     const dbUser = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.email, user.primaryEmailAddress.emailAddress));
+      .where(eq(usersTable.email, user.email));
 
     if (dbUser.length === 0) {
       return NextResponse.json([]);
@@ -100,7 +141,7 @@ export async function GET(req: NextRequest) {
     // Extract courseIds
     const courseIds = enrolledCourses.map((c) => c.courseId);
 
-    // 2️⃣ Fetch all course details in one go
+    // 2️⃣ Fetch all course details
     const courses = await db.select().from(coursesTable);
 
     // Filter courses by courseIds
@@ -128,10 +169,17 @@ export async function GET(req: NextRequest) {
         desc(completedExercisesTable.exerciseId)
       );
 
+    // 5️⃣ Fetch certificates for user
+    const userCerts = await db
+      .select()
+      .from(certificatesTable)
+      .where(eq(certificatesTable.userId, userId));
+
     const finalResult = filteredCourses.map((course) => {
       const courseEnrollInfo = enrolledCourses.find(
         (e) => e.courseId === course.courseId
       );
+      const cert = userCerts.find((c) => c.courseId === course.courseId);
 
       return {
         ...course,
@@ -143,6 +191,7 @@ export async function GET(req: NextRequest) {
         ),
         courseEnrolledInfo: courseEnrollInfo,
         userEnrolled: true,
+        certificate: cert || null,
       };
     });
 
@@ -150,7 +199,6 @@ export async function GET(req: NextRequest) {
     const formattedResult = finalResult.map((item) => {
       // Count total exercises by summing exercises arrays in all chapters
       const totalExercises = item.chapters.reduce((acc, chapter) => {
-        // If exercises is stored as JSON/array
         const exercisesCount = Array.isArray(chapter.exercises)
           ? chapter.exercises.length
           : 0;
@@ -158,22 +206,35 @@ export async function GET(req: NextRequest) {
       }, 0);
 
       const completedExercises = item.completedExercises.length;
+      const progressPercent = totalExercises > 0
+        ? Math.round((completedExercises / totalExercises) * 100)
+        : 0;
 
       return {
         courseId: item.courseId,
         title: item.title,
+        description: item.description,
         bannerImage: item?.bannerImage,
+        category: item.category || "AI/ML",
+        duration: item.duration || "8 Hours",
+        instructor: item.instructor || "CodeTree AI Faculty",
         totalExercises,
         completedExercises,
+        progressPercent,
         xpEarned: item.courseEnrolledInfo?.xpEarned || 0,
         level: item.level,
+        status: item.certificate ? "certificate_issued" : progressPercent === 100 ? "completed" : "in_progress",
+        certificate: item.certificate,
       };
     });
 
     return NextResponse.json(formattedResult);
   } else {
-    //fetch all courses
-    const result = await db.select().from(coursesTable);
+    // Fetch all published courses ordered by courseId
+    const result = await db
+      .select()
+      .from(coursesTable)
+      .orderBy(asc(coursesTable.courseId));
     return NextResponse.json(result);
   }
 }

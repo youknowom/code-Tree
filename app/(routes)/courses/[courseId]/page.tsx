@@ -9,7 +9,7 @@ import CourseChappter from "./_components/CourseChappter";
 import CourseStatus from "./_components/CourseStatus";
 import CommunityHelpSection from "./_components/CommunityHelpSection";
 
-function CourseDetail() {
+export default function CourseDetailPage() {
   const params = useParams();
   const courseId = params?.courseId as string;
 
@@ -25,23 +25,23 @@ function CourseDetail() {
       setLoading(true);
       const res = await axios.get(`/api/course?courseId=${courseId}`);
       setCourseDetail(res.data);
-    } catch (error) {
-      // Error handled by UI feedback
+    } catch {
+      // Error handled
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[oklch(0.09_0.008_264)]">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--fg)] pb-20">
       <CourseDetailbanner
         loading={loading}
         courseDetail={courseDetail}
         refreshData={getCourseDetail}
       />
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-6 py-8 lg:py-10 items-start">
-        {/* Main Content */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 px-4 sm:px-6 py-8 items-start">
+        {/* Main Chapter Syllabus */}
         <div className="space-y-6">
           <CourseChappter
             loading={loading}
@@ -50,8 +50,8 @@ function CourseDetail() {
           />
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
+        {/* Sidebar Status & Hints */}
+        <div className="lg:sticky lg:top-20 lg:self-start space-y-5">
           <CourseStatus courseDetail={courseDetail} loading={loading} />
           <CommunityHelpSection />
         </div>
@@ -59,5 +59,3 @@ function CourseDetail() {
     </div>
   );
 }
-
-export default CourseDetail;

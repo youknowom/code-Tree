@@ -1,0 +1,27 @@
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#0B132B"/>
+  <circle cx="400" cy="225" r="180" fill="#00D8FF" fill-opacity="0.08" filter="blur(60px)"/>
+  
+  <!-- Subtle Grid -->
+  <path d="M0 75H800M0 150H800M0 225H800M0 300H800M0 375H800" stroke="#1C2D5A" stroke-width="0.75" stroke-dasharray="4 6"/>
+  <path d="M100 0V450M200 0V450M300 0V450M400 0V450M500 0V450M600 0V450M700 0V450" stroke="#1C2D5A" stroke-width="0.75" stroke-dasharray="4 6"/>
+
+  <!-- React Nucleus -->
+  <circle cx="400" cy="225" r="22" fill="#00D8FF"/>
+  <circle cx="400" cy="225" r="30" stroke="#00D8FF" stroke-opacity="0.3" stroke-width="2"/>
+
+  <!-- Orbit 1 -->
+  <ellipse cx="400" cy="225" rx="140" ry="52" stroke="#00D8FF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Orbit 2 -->
+  <ellipse cx="400" cy="225" rx="140" ry="52" transform="rotate(60 400 225)" stroke="#00D8FF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Orbit 3 -->
+  <ellipse cx="400" cy="225" rx="140" ry="52" transform="rotate(120 400 225)" stroke="#00D8FF" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Badge Overlay -->
+  <rect x="48" y="44" width="130" height="32" rx="16" fill="#00D8FF" fill-opacity="0.15" stroke="#00D8FF" stroke-opacity="0.4"/>
+  <text x="113" y="65" fill="#00D8FF" font-family="system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1">REACT 19</text>
+
+  <!-- Title Watermark Bottom Left -->
+  <text x="48" y="380" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.5">React Beginner</text>
+  <text x="48" y="408" fill="#64748B" font-family="system-ui, sans-serif" font-size="14" font-weight="500">Components · Props · State · Hooks</text>
+</svg>

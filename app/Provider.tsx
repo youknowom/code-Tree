@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { useUser } from "@clerk/nextjs";
+import { SessionProvider, useSession } from "next-auth/react";
 import axios from "axios";
 import { UserDetailContext } from "@/context/UserDetailContext";
 import Header from "./_components/Header";
@@ -15,32 +15,44 @@ type UserDetail = {
   subscription?: string | null;
 };
 
-function Provider({
-  children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
-  const { user } = useUser();
+function InnerProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [userDetail, setUserDetail] = useState<UserDetail | null>(null);
 
   useEffect(() => {
-    if (user) {
-      createNewUser();
+    if (session?.user?.email) {
+      loadUser();
+    } else {
+      setUserDetail(null);
     }
-  }, [user]);
+  }, [session]);
 
-  const createNewUser = async () => {
-    const result = await axios.post("/api/user", {});
-    setUserDetail(result?.data);
+  const loadUser = async () => {
+    try {
+      const result = await axios.post("/api/user", {});
+      setUserDetail(result?.data);
+    } catch {
+      // silently handle
+    }
   };
 
   return (
-    <NextThemesProvider {...props}>
-      <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-        <Header />
-        {children}
-      </UserDetailContext.Provider>
-    </NextThemesProvider>
+    <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
+      <Header />
+      {children}
+    </UserDetailContext.Provider>
   );
 }
 
-export default Provider;
+export default function Provider({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+  return (
+    <SessionProvider>
+      <NextThemesProvider {...props}>
+        <InnerProvider>{children}</InnerProvider>
+      </NextThemesProvider>
+    </SessionProvider>
+  );
+}

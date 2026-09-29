@@ -1,0 +1,23 @@
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#18150D"/>
+  <circle cx="400" cy="225" r="180" fill="#F7DF1E" fill-opacity="0.08" filter="blur(60px)"/>
+  
+  <!-- Subtle Grid -->
+  <path d="M0 75H800M0 150H800M0 225H800M0 300H800M0 375H800" stroke="#2B2412" stroke-width="0.75" stroke-dasharray="4 6"/>
+  <path d="M100 0V450M200 0V450M300 0V450M400 0V450M500 0V450M600 0V450M700 0V450" stroke="#2B2412" stroke-width="0.75" stroke-dasharray="4 6"/>
+
+  <!-- JS Monogram Icon Box -->
+  <rect x="330" y="155" width="140" height="140" rx="24" fill="#F7DF1E"/>
+  <rect x="330" y="155" width="140" height="140" rx="24" stroke="#FDE047" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <!-- 'JS' Letters -->
+  <text x="360" y="250" fill="#000000" font-family="system-ui, sans-serif" font-size="72" font-weight="900" letter-spacing="-2">JS</text>
+
+  <!-- Badge Overlay -->
+  <rect x="48" y="44" width="140" height="32" rx="16" fill="#F7DF1E" fill-opacity="0.15" stroke="#F7DF1E" stroke-opacity="0.4"/>
+  <text x="118" y="65" fill="#FACC15" font-family="system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1">JAVASCRIPT</text>
+
+  <!-- Title Bottom Left -->
+  <text x="48" y="380" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.5">JavaScript Core</text>
+  <text x="48" y="408" fill="#94A3B8" font-family="system-ui, sans-serif" font-size="14" font-weight="500">DOM Manipulation · Async / Await · ES6+ Syntax</text>
+</svg>

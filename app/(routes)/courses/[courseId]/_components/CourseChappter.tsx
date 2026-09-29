@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { Course } from "../../_components/CourseList";
 import {
@@ -9,15 +11,24 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  CheckCircle2,
+  BookOpen,
+  Star,
+  Play,
+  ChevronRight,
+  Code2,
+  Check,
+  Circle,
+  HelpCircle,
+  Award,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2Icon, Lock, CheckCircle2, BookOpen, Star } from "lucide-react";
-import { fireConfetti } from "@/components/ConfettiBlast";
-import Link from "next/link";
+import AssessmentModal from "@/components/AssessmentModal";
 
 type Props = {
   loading: boolean;
@@ -25,224 +36,324 @@ type Props = {
   refreshData: () => void;
 };
 
-function CourseChapter({ loading, courseDetail, refreshData }: Props) {
-  const [completingExercise, setCompletingExercise] = useState<string | null>(null);
+export default function CourseChapter({
+  loading,
+  courseDetail,
+  refreshData,
+}: Props) {
+  const [assessmentModalOpen, setAssessmentModalOpen] = useState(false);
+  const [assessmentLoading, setAssessmentLoading] = useState(false);
+  const [assessmentQuestions, setAssessmentQuestions] = useState<any[]>([]);
 
-  const handleCompleteExercise = async (
-    chapterId: number,
-    exerciseId: number,
-    xp: number
-  ) => {
-    const key = `${chapterId}-${exerciseId}`;
-    setCompletingExercise(key);
-
-    try {
-      const res = await axios.post("/api/complete-exercise", {
-        courseId: courseDetail?.courseId,
-        chapterId,
-        exerciseId,
-        xpEarned: xp,
-      });
-      const alreadyCompleted = res.data?.alreadyCompleted;
-
-      if (!alreadyCompleted) {
-        fireConfetti();
-        toast.success(`Exercise completed! +${xp}xp earned!`);
-      }
-
-      refreshData();
-    } catch (error) {
-      toast.error("Failed to complete exercise");
-    } finally {
-      setCompletingExercise(null);
-    }
-  };
-
-  const EnableExercise = (currentChapterId: number, currentExerciseId: number) => {
-    if (!courseDetail?.userEnrolled) return false;
-    if (!courseDetail.chapters) return false;
-
-    const completed = courseDetail?.completedExcercises;
-
-    if (!completed || completed.length === 0) {
-      const firstChapter = courseDetail.chapters?.[0];
-      return (
-        firstChapter &&
-        currentChapterId === firstChapter.chapterId &&
-        currentExerciseId === 1
-      );
-    }
-
-    const isAlreadyCompleted = completed.find(
+  const isExerciseCompleted = (chapterId: number, exerciseIndex: number) => {
+    return !!courseDetail?.completedExcercises?.some(
       (item) =>
-        item.chapterId === currentChapterId && item.exerciseId === currentExerciseId
+        item.chapterId === chapterId && item.exerciseId === exerciseIndex
     );
-    if (isAlreadyCompleted) return true;
-
-    const last = completed[completed.length - 1];
-    const lastCompletedChapter = courseDetail.chapters?.find(
-      (ch) => ch.chapterId === last.chapterId
-    );
-
-    if (!lastCompletedChapter) return false;
-
-    if (currentChapterId === last.chapterId) {
-      return currentExerciseId === last.exerciseId + 1;
-    }
-
-    if (currentChapterId === last.chapterId + 1) {
-      const allPrevCompleted =
-        lastCompletedChapter.exercises.length === last.exerciseId;
-      return allPrevCompleted && currentExerciseId === 1;
-    }
-
-    return false;
   };
 
-  const isExerciseComplted = (chapterId: number, exceriseId: number) => {
-    const completeChapterse = courseDetail?.completedExcercises;
-    const foundExercise = completeChapterse?.find(
-      (item) => item.chapterId == chapterId && item.exerciseId == exceriseId
-    );
-    return foundExercise ? true : false;
+  const handleOpenAssessment = async () => {
+    if (!courseDetail?.courseId) return;
+    setAssessmentLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/assessment?courseId=${courseDetail.courseId}`
+      );
+      if (res.data?.questions && res.data.questions.length > 0) {
+        setAssessmentQuestions(res.data.questions);
+        setAssessmentModalOpen(true);
+      } else {
+        toast.error("No assessment configured for this course yet.");
+      }
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.error || "Failed to load course assessment."
+      );
+    } finally {
+      setAssessmentLoading(false);
+    }
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="w-full h-[72px] rounded-2xl shimmer" />
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="p-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] space-y-3"
+          >
+            <Skeleton className="h-5 w-48 rounded-md" />
+            <Skeleton className="h-3 w-64 rounded-md" />
+          </div>
         ))}
       </div>
     );
   }
 
-  // No chapters
-  if (!courseDetail?.chapters?.length) {
-    return (
-      <div className="flex flex-col items-center gap-3 py-12 rounded-2xl border border-white/8 border-dashed bg-[oklch(0.12_0.01_264)] text-center">
-        <BookOpen className="w-10 h-10 text-white/20" />
-        <p className="text-white/40 text-sm">No chapters available yet</p>
-      </div>
-    );
-  }
+  const totalExercises =
+    courseDetail?.chapters?.reduce(
+      (acc, ch) => acc + (ch.exercises?.length || 0),
+      0
+    ) || 0;
+
+  const totalCompleted = courseDetail?.completedExcercises?.length || 0;
+  const certificate = courseDetail?.certificate;
+  const assessment = courseDetail?.assessment;
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-[oklch(0.12_0.01_264)] overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/6">
-        <div className="w-9 h-9 rounded-xl bg-amber-400/8 border border-amber-400/15 flex items-center justify-center">
-          <BookOpen className="w-4 h-4 text-amber-400" />
-        </div>
+    <div className="space-y-6">
+      {/* Syllabus Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border-default)] gap-2">
         <div>
-          <h2 className="font-bold text-white">Course Chapters</h2>
-          <p className="text-xs text-white/30">
-            {courseDetail.chapters.length} chapters
+          <h2 className="text-xl font-bold text-[var(--fg)] tracking-tight">
+            Curriculum Syllabus
+          </h2>
+          <p className="text-xs text-[var(--fg-muted)] mt-0.5">
+            {courseDetail?.chapters?.length || 0} modules · {totalExercises} interactive lessons
           </p>
         </div>
+
+        {totalExercises > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-[var(--fg-subtle)]">
+              Overall Track Progress:
+            </span>
+            <span className="text-xs font-bold text-amber-500 font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+              {totalCompleted} / {totalExercises} Solved
+            </span>
+          </div>
+        )}
       </div>
 
-      <Accordion type="single" collapsible className="divide-y divide-white/6">
-        {courseDetail.chapters.map((chapter, index) => (
-          <AccordionItem
-            key={index}
-            value={`chapter-${index}`}
-            className="border-0"
-          >
-            <div className="flex items-center">
-              <AccordionTrigger className="flex items-center gap-4 px-5 py-4 hover:bg-white/4 transition-colors w-full text-left [&>svg]:ml-auto [&>svg]:shrink-0">
-                {/* Chapter number */}
-                <div className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm gradient-brand text-[oklch(0.1_0.005_264)]">
-                  {index + 1}
-                </div>
+      {/* Chapters Accordion */}
+      <Accordion
+        type="single"
+        collapsible
+        defaultValue="item-0"
+        className="space-y-3"
+      >
+        {courseDetail?.chapters?.map((chapter, index) => {
+          const completedCount =
+            chapter?.exercises?.filter((_, eIdx) =>
+              isExerciseCompleted(chapter.id, eIdx)
+            ).length || 0;
 
-                <div className="flex-1 text-left min-w-0">
-                  <span className="font-semibold text-white/90 text-base line-clamp-1">
-                    {chapter?.name}
+          const isChapterComplete =
+            (chapter?.exercises?.length || 0) > 0 &&
+            completedCount === chapter?.exercises?.length;
+
+          return (
+            <AccordionItem
+              value={`item-${index}`}
+              key={chapter.id ?? index}
+              className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden transition-all duration-200"
+            >
+              <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-[var(--bg-elevated)]/50 transition-colors">
+                <div className="flex items-center gap-3 text-left w-full pr-2">
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold font-mono transition-colors",
+                      isChapterComplete
+                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                        : "bg-[var(--bg-elevated)] text-[var(--fg-subtle)] border border-[var(--border-default)]"
+                    )}
+                  >
+                    {isChapterComplete ? (
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      String(index + 1).padStart(2, "0")
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-[var(--fg)] truncate">
+                        {chapter.name}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[var(--fg-muted)] line-clamp-1 mt-0.5 font-normal">
+                      {chapter.description}
+                    </p>
+                  </div>
+
+                  <span className="text-xs font-mono text-[var(--fg-subtle)] shrink-0 font-medium ml-2">
+                    {completedCount} / {chapter.exercises?.length || 0}
                   </span>
-                  <p className="text-xs text-white/30 mt-0.5">
-                    {chapter?.exercises?.length || 0} exercises
-                  </p>
                 </div>
               </AccordionTrigger>
+
+              <AccordionContent className="pt-0 pb-3 px-5 border-t border-[var(--border-subtle)]">
+                <div className="space-y-2 pt-3">
+                  {chapter.exercises?.map((exc, indexExc) => {
+                    const completed = isExerciseCompleted(chapter.id, indexExc);
+                    const exerciseUrl = `/courses/${courseDetail.courseId}/${chapter.chapterId}/${exc.slug}`;
+
+                    return (
+                      <div
+                        key={exc.slug ?? indexExc}
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border transition-all duration-150 gap-3",
+                          completed
+                            ? "border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/30"
+                            : "border-[var(--border-subtle)] bg-[var(--bg-elevated)]/30 hover:bg-[var(--bg-elevated)] hover:border-[var(--border-default)]"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="shrink-0">
+                            {completed ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            ) : (
+                              <div className="w-4 h-4 rounded-full border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-subtle)] text-[10px]">
+                                •
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono text-[var(--fg-subtle)]">
+                                #{String(indexExc + 1).padStart(2, "0")}
+                              </span>
+                              <p className="text-xs sm:text-sm font-semibold text-[var(--fg)] truncate">
+                                {exc.name}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[11px] text-amber-500 font-medium flex items-center gap-1 font-mono">
+                                <Star className="w-3 h-3 fill-amber-500/30" />
+                                +{exc.xp || 20} XP
+                              </span>
+                              <span className="text-[10px] uppercase font-bold text-[var(--fg-subtle)] bg-[var(--overlay-8)] px-1.5 py-0.5 rounded-sm">
+                                {exc.difficulty || "easy"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Action Button */}
+                        <div className="shrink-0">
+                          {completed ? (
+                            <Link href={exerciseUrl}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 text-xs font-semibold h-8 px-3 rounded-lg cursor-pointer"
+                              >
+                                Review <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                              </Button>
+                            </Link>
+                          ) : (
+                            <Button
+                              asChild
+                              size="sm"
+                              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs h-8 px-3.5 rounded-lg cursor-pointer shadow-xs"
+                            >
+                              <Link href={exerciseUrl}>
+                                Solve Challenge <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
+
+      {/* ── FINAL CERTIFICATION ASSESSMENT MODULE ── */}
+      {assessment && (
+        <div className="rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-[var(--bg-card)] to-[var(--bg-card)] p-6 sm:p-7 shadow-lg relative overflow-hidden space-y-4">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0">
+                <Award className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                    FINAL CAPSTONE
+                  </span>
+                  {certificate && (
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" /> CERTIFIED
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg sm:text-xl font-extrabold text-[var(--fg)] tracking-tight">
+                  {assessment.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--fg-muted)] leading-relaxed max-w-xl">
+                  {assessment.description ||
+                    "Demonstrate practical competence across all course topics to earn your verified certificate."}
+                </p>
+                <div className="text-xs text-[var(--fg-subtle)] font-medium pt-1">
+                  Passing Score:{" "}
+                  <span className="font-mono font-bold text-amber-400">
+                    {assessment.passingScore}%
+                  </span>{" "}
+                  · Timed: {assessment.timeLimitMinutes || 30} mins · Automated server verification
+                </div>
+              </div>
             </div>
 
-            <AccordionContent className="border-t border-white/6">
-              <div className="divide-y divide-white/4">
-                {chapter?.exercises.map((exc, indexExc) => (
-                  <div
-                    key={`${chapter.chapterId}-${indexExc}`}
-                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/3 transition-colors"
+            <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 sm:pt-0">
+              {certificate ? (
+                <>
+                  <Link
+                    href={`/verify/${certificate.certificateId}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition-colors shadow-sm"
                   >
-                    {/* Exercise number */}
-                    <div className="shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center text-xs font-bold text-white/40">
-                      {indexExc + 1}
-                    </div>
+                    <ShieldCheck className="w-4 h-4" /> View Certificate
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={assessmentLoading}
+                    onClick={handleOpenAssessment}
+                    className="text-xs font-semibold border-[var(--border-default)] cursor-pointer"
+                  >
+                    Retake Exam
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  disabled={assessmentLoading}
+                  onClick={handleOpenAssessment}
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {assessmentLoading ? "Loading Exam..." : "Start Certification Exam"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-                    {/* Exercise info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white/80 truncate">
-                        {exc.name}
-                      </p>
-                      <p className="text-xs text-white/30 mt-0.5 flex items-center gap-1">
-                        <Star className="w-3 h-3 text-amber-400/60" />
-                        {exc.xp} XP
-                      </p>
-                    </div>
-
-                    {/* Action button */}
-                    <div className="shrink-0">
-                      {isExerciseComplted(chapter?.chapterId, indexExc + 1) ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-400/10 border border-emerald-400/20">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-xs font-semibold text-emerald-400">Done</span>
-                        </div>
-                      ) : EnableExercise(chapter?.chapterId, indexExc + 1) ? (
-                        <Link
-                          href={
-                            "/courses/" +
-                            courseDetail?.courseId +
-                            "/" +
-                            chapter?.chapterId +
-                            "/" +
-                            exc?.slug
-                          }
-                        >
-                          <Button
-                            size="sm"
-                            className="gradient-brand text-[oklch(0.1_0.005_264)] font-semibold border-0 hover:opacity-90 h-8 px-3 text-xs"
-                          >
-                            Start · {exc?.xp}xp
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white/4 border border-white/8 text-white/25 cursor-not-allowed">
-                              <Lock className="w-3.5 h-3.5" />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            className="max-w-[220px] bg-[oklch(0.15_0.01_264)] border-white/10 text-white/80 text-xs"
-                            side="left"
-                          >
-                            {!courseDetail?.userEnrolled
-                              ? "Enroll in this course to start learning"
-                              : "Complete previous exercises first"}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      {/* Assessment Modal */}
+      {assessment && (
+        <AssessmentModal
+          isOpen={assessmentModalOpen}
+          onClose={() => setAssessmentModalOpen(false)}
+          courseId={courseDetail.courseId}
+          courseTitle={courseDetail.title}
+          assessmentTitle={assessment.title}
+          passingScore={assessment.passingScore || 70}
+          questions={assessmentQuestions}
+          onSuccess={() => {
+            refreshData();
+          }}
+        />
+      )}
     </div>
   );
 }
-
-export default CourseChapter;

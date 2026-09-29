@@ -15,7 +15,7 @@ import {
 import { CourseExercise } from "../[exerciseslug]/page";
 import { nightOwl } from "@codesandbox/sandpack-themes";
 import { useParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
 import {
@@ -28,6 +28,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { validateCode } from "@/lib/validateCode";
+import { fireConfetti } from "@/components/ConfettiBlast";
 
 type Props = {
   courseExerciseData: CourseExercise | undefined;
@@ -52,6 +54,8 @@ const SANDPACK_TEMPLATES: Record<string, string> = {
   js: "vanilla",
   javascript: "vanilla",
   typescript: "vanilla-ts",
+  python: "node",
+  py: "node",
 };
 
 function getSandpackTemplate(editorType?: string): string {
@@ -70,8 +74,13 @@ function getLanguageLabel(editorType?: string): string {
     angular: "Angular",
     svelte: "Svelte",
     node: "Node.js",
+    python: "Python 3",
+    py: "Python 3",
   };
   const key = getSandpackTemplate(editorType);
+  if (editorType && (editorType.toLowerCase() === "python" || editorType.toLowerCase() === "py")) {
+    return "Python 3";
+  }
   return map[key] ?? editorType ?? "HTML";
 }
 
@@ -80,10 +89,12 @@ const EditorToolbar = ({
   onCompleteExercise,
   IsCompleted,
   langLabel,
+  exerciseContent,
 }: {
-  onCompleteExercise: () => Promise<void>;
+  onCompleteExercise: (userCode: string) => Promise<void>;
   IsCompleted: any;
   langLabel: string;
+  exerciseContent: any;
 }) => {
   const { sandpack } = useSandpack();
   const [running, setRunning] = useState(false);
@@ -96,8 +107,43 @@ const EditorToolbar = ({
   };
 
   const handleComplete = async () => {
+    // 1. Get user code (safely handle activeFile path variations)
+    const activeFile = sandpack.activeFile || "";
+    const userCode =
+      sandpack.files[activeFile]?.code ??
+      sandpack.files[`/${activeFile.replace(/^\//, "")}`]?.code ??
+      sandpack.files[activeFile.replace(/^\//, "")]?.code ??
+      Object.values(sandpack.files)[0]?.code ??
+      "";
+
+    const starterCode =
+      exerciseContent?.starterCode?.[activeFile] ||
+      exerciseContent?.starterCode?.[`/${activeFile.replace(/^\//, "")}`] ||
+      exerciseContent?.starterCode?.[activeFile.replace(/^\//, "")] ||
+      exerciseContent?.startCode?.[activeFile] ||
+      exerciseContent?.startCode?.[`/${activeFile.replace(/^\//, "")}`] ||
+      exerciseContent?.startCode?.[activeFile.replace(/^\//, "")] ||
+      exerciseContent?.starterCode ||
+      exerciseContent?.startCode ||
+      "";
+
+
+    // 2. Client-side Validate
+    const validation = validateCode(userCode, starterCode, {
+      regex: exerciseContent?.regex,
+      output: exerciseContent?.output,
+      task: exerciseContent?.task,
+    });
+
+    if (!validation.passed) {
+      toast.error(
+        validation.message || "Your code does not satisfy the requirements yet."
+      );
+      return;
+    }
+
     setCompleting(true);
-    await onCompleteExercise();
+    await onCompleteExercise(userCode);
     setCompleting(false);
   };
 
@@ -197,24 +243,29 @@ const PreviewToolbar = () => {
 // ── Main CodeEditor ──
 function CodeEditor({ courseExerciseData, loading }: Props) {
   const { exerciseslug, chapterId } = useParams();
-  const { isSignedIn } = useUser();
+  const { data: session } = useSession();
+  const isSignedIn = !!session?.user;
 
   const exerciseIndex = courseExerciseData?.exercises?.findIndex(
     (item) => item.slug === exerciseslug
   ) ?? -1;
 
-  const IsCompleted = courseExerciseData?.completedExercise?.find(
-    (item) =>
-      item?.courseId === courseExerciseData?.courseId &&
-      item?.exerciseId === exerciseIndex + 1
-  );
+  const [locallyCompleted, setLocallyCompleted] = useState(false);
 
-  const onCompleteExercise = async () => {
+  const isExerciseDone =
+    locallyCompleted ||
+    !!courseExerciseData?.completedExercise?.find(
+      (item) =>
+        item?.courseId === courseExerciseData?.courseId &&
+        item?.exerciseId === exerciseIndex + 1
+    );
+
+  const onCompleteExercise = async (userCode: string) => {
     if (!isSignedIn) {
       toast.error("Please sign in to save your progress.", {
         action: {
           label: "Sign In",
-          onClick: () => window.location.href = "/sign-in",
+          onClick: () => (window.location.href = "/sign-in"),
         },
       });
       return;
@@ -226,36 +277,62 @@ function CodeEditor({ courseExerciseData, loading }: Props) {
         chapterId: courseExerciseData.chapterId,
         exerciseId: exerciseIndex + 1,
         xpEarned: courseExerciseData.exercises[exerciseIndex]?.xp ?? 0,
+        userCode: userCode,
       });
+
+      setLocallyCompleted(true);
+      fireConfetti();
 
       if (res.data?.alreadyCompleted) {
         toast.info("Already completed! Great job 🏆");
       } else {
         toast.success(
-          `+${courseExerciseData.exercises[exerciseIndex]?.xp ?? 0} XP — Exercise Completed! 🎉`
+          `+${courseExerciseData.exercises[exerciseIndex]?.xp ?? 50} XP — Exercise Completed! 🎉`
         );
-        setTimeout(() => window.location.reload(), 1200);
       }
     } catch (err: any) {
       if (err?.response?.status === 401) {
         toast.error("Please sign in to save your progress.");
       } else {
-        toast.error("Failed to submit. Please try again.");
+        toast.error(
+          err?.response?.data?.error || "Failed to submit. Please check your code and try again."
+        );
       }
     }
   };
 
   const template = getSandpackTemplate(courseExerciseData?.editorType);
   const langLabel = getLanguageLabel(courseExerciseData?.editorType);
-  const startCode = courseExerciseData?.ExerciseData?.exerciseContent?.startCode || {};
-  const activeFile = Object.keys(startCode)[0] || "/index.html";
+  const rawStartCode =
+    courseExerciseData?.ExerciseData?.exerciseContent?.startCode ||
+    courseExerciseData?.ExerciseData?.exerciseContent?.starterCode;
+
+  let files: Record<string, string> = {};
+  if (typeof rawStartCode === "string") {
+    const defaultFilename =
+      courseExerciseData?.editorType === "python"
+        ? "/main.py"
+        : courseExerciseData?.editorType === "vanilla-ts"
+        ? "/index.ts"
+        : courseExerciseData?.editorType === "react"
+        ? "/App.js"
+        : "/index.html";
+    files = { [defaultFilename]: rawStartCode };
+  } else if (rawStartCode && typeof rawStartCode === "object") {
+    files = rawStartCode;
+  } else {
+    files = { "/index.html": "<!DOCTYPE html>\n<html>\n<body>\n</body>\n</html>" };
+  }
+
+  const activeFile = Object.keys(files)[0] || "/index.html";
 
   return (
     <div className="h-full flex flex-col" style={{ background: "#1e1e1e" }}>
       <SandpackProvider
+        key={courseExerciseData?.ExerciseData?.exerciseId || "default"}
         theme={nightOwl}
         template={template as any}
-        files={startCode}
+        files={files}
         options={{ autorun: false, autoReload: false, activeFile }}
         style={{
           flex: 1,
@@ -268,8 +345,9 @@ function CodeEditor({ courseExerciseData, loading }: Props) {
         {/* Code editor top toolbar */}
         <EditorToolbar
           onCompleteExercise={onCompleteExercise}
-          IsCompleted={IsCompleted}
+          IsCompleted={isExerciseDone}
           langLabel={langLabel}
+          exerciseContent={courseExerciseData?.ExerciseData?.exerciseContent}
         />
 
         {/* Split: editor top, preview bottom */}

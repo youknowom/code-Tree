@@ -1,29 +1,43 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 
-// All routes that do NOT require authentication
-const isPublicRoute = createRouteMatcher([
-  "/",                  // landing
-  "/courses(.*)",       // course browsing (read-only)
-  "/pricing(.*)",       // pricing page
-  "/contact(.*)",       // contact page
-  "/sign-in(.*)",       // auth pages
-  "/sign-up(.*)",
-  "/api/course(.*)",    // public course listing API
-  "/api/webhook(.*)",   // webhooks (if any)
-]);
+const publicRoutes = [
+  "/",
+  "/courses",
+  "/pricing",
+  "/contact",
+  "/sign-in",
+  "/sign-up",
+  "/verify",
+  "/api/auth",
+  "/api/course",
+  "/api/exercise",
+  "/api/ai/hint",
+  "/api/assessment",
+  "/api/certificate/verify",
+];
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    // Protect all non-public routes (dashboard, exercise, API mutations)
-    await auth.protect();
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+
+  const isPublic =
+    publicRoutes.some(
+      (route) =>
+        nextUrl.pathname === route || nextUrl.pathname.startsWith(`${route}/`)
+    ) || nextUrl.pathname.startsWith("/api/auth");
+
+  if (!isLoggedIn && !isPublic) {
+    const signInUrl = new URL("/sign-in", nextUrl.origin);
+    signInUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+    return NextResponse.redirect(signInUrl);
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

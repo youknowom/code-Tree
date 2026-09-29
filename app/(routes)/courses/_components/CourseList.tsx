@@ -1,11 +1,11 @@
 "use client";
 
 import axios from "axios";
-import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { BookOpen } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import { BookOpen, Search, ArrowRight, Code2, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CourseIcon from "@/components/CourseIcon";
 
 export type Course = {
   id: number;
@@ -15,10 +15,19 @@ export type Course = {
   bannerImage: string;
   level?: "Beginner" | "Intermediate" | "Advanced";
   tags?: string;
+  editorType?: string;
+  category?: string;
+  duration?: string;
+  instructor?: string;
+  passingScore?: number;
+  certificateEnabled?: boolean;
+  overview?: any;
   chapters?: chapter[];
   userEnrolled?: boolean;
   courseEnrolledInfo?: courseEnrolledInfo;
   completedExcercises: completedExcercises[];
+  assessment?: any;
+  certificate?: any;
 };
 
 export type completedExcercises = {
@@ -48,17 +57,38 @@ export type exercises = {
   difficulty: string;
 };
 
-const levelStyles: Record<NonNullable<Course["level"]>, { bg: string; text: string; border: string }> = {
-  Beginner: { bg: "bg-emerald-400/10", text: "text-emerald-400", border: "border-emerald-400/20" },
-  Intermediate: { bg: "bg-amber-400/10", text: "text-amber-400", border: "border-amber-400/20" },
-  Advanced: { bg: "bg-rose-400/10", text: "text-rose-400", border: "border-rose-400/20" },
+const levelStyles: Record<
+  NonNullable<Course["level"]>,
+  { bg: string; text: string; border: string }
+> = {
+  Beginner: {
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-500",
+    border: "border-emerald-500/20",
+  },
+  Intermediate: {
+    bg: "bg-amber-500/10",
+    text: "text-amber-500",
+    border: "border-amber-500/20",
+  },
+  Advanced: {
+    bg: "bg-purple-500/10",
+    text: "text-purple-400",
+    border: "border-purple-500/20",
+  },
 };
 
 type Props = {
   smallerCard?: boolean;
+  searchQuery?: string;
+  selectedCategory?: string;
 };
 
-function CourseList({ smallerCard = false }: Props) {
+export default function CourseList({
+  smallerCard = false,
+  searchQuery = "",
+  selectedCategory = "all",
+}: Props) {
   const [courseList, setCourseList] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,115 +100,193 @@ function CourseList({ smallerCard = false }: Props) {
     try {
       setLoading(true);
       const res = await axios.get("/api/course");
-      setCourseList(res.data);
-    } catch (error) {
-      // Error handled by UI feedback
+      setCourseList(res.data || []);
+    } catch {
+      // handled
     } finally {
       setLoading(false);
     }
   };
 
+  const filteredCourses = useMemo(() => {
+    return courseList.filter((course) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        q === "" ||
+        course.title.toLowerCase().includes(q) ||
+        course.description?.toLowerCase().includes(q) ||
+        course.tags?.toLowerCase().includes(q) ||
+        course.category?.toLowerCase().includes(q);
+
+      if (!matchesSearch) return false;
+
+      if (selectedCategory === "all") return true;
+      if (selectedCategory === "beginner") return course.level === "Beginner";
+      if (selectedCategory === "intermediate")
+        return course.level === "Intermediate";
+      if (selectedCategory === "advanced")
+        return course.level === "Advanced";
+
+      if (selectedCategory === "aiml")
+        return (
+          course.category === "AI/ML" ||
+          ["python", "numpy", "machine learning", "scikit", "deep learning", "pytorch", "generative", "rag", "llm"].some(
+            (t) => (course.tags || "").toLowerCase().includes(t)
+          )
+        );
+
+      if (selectedCategory === "deeplearning")
+        return (
+          course.title.toLowerCase().includes("deep learning") ||
+          course.title.toLowerCase().includes("pytorch") ||
+          (course.tags || "").toLowerCase().includes("pytorch")
+        );
+
+      if (selectedCategory === "genai")
+        return (
+          course.title.toLowerCase().includes("generative") ||
+          course.title.toLowerCase().includes("rag") ||
+          course.title.toLowerCase().includes("agent") ||
+          (course.tags || "").toLowerCase().includes("generative")
+        );
+
+      if (selectedCategory === "web")
+        return ["React", "HTML", "CSS", "Tailwind", "Next.js", "TypeScript", "JavaScript"].some((t) =>
+          (course.tags || "").toLowerCase().includes(t.toLowerCase())
+        );
+
+      return true;
+    });
+  }, [courseList, searchQuery, selectedCategory]);
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className={cn(
-              "rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] overflow-hidden shimmer",
-              smallerCard ? "h-[160px]" : "h-[280px]"
-            )}
-          />
+            className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden h-[260px] animate-pulse p-6 space-y-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)]" />
+            <div className="h-5 bg-[var(--bg-elevated)] rounded-md w-3/4" />
+            <div className="h-3 bg-[var(--bg-elevated)] rounded-md w-full" />
+            <div className="h-3 bg-[var(--bg-elevated)] rounded-md w-2/3" />
+          </div>
         ))}
       </div>
     );
   }
 
-  if (courseList.length === 0) {
+  if (filteredCourses.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 py-16 rounded-2xl border border-[var(--border-default)] border-dashed bg-[var(--bg-card)] text-center">
-        <BookOpen className="w-10 h-10 text-[var(--fg-subtle)]" />
-        <p className="text-[var(--fg-subtle)] text-sm">No courses available yet.</p>
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 rounded-2xl border border-[var(--border-default)] border-dashed bg-[var(--bg-card)] text-center">
+        <BookOpen className="w-8 h-8 text-[var(--fg-subtle)]" />
+        <h3 className="font-bold text-base text-[var(--fg)]">No tracks found</h3>
+        <p className="text-xs text-[var(--fg-muted)] max-w-sm">
+          No courses matched your current search filters. Try clearing the search query or selecting &quot;All Tracks&quot;.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {courseList.map((course) => (
-        <CourseCardItem key={course.courseId} course={course} smallerCard={smallerCard} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {filteredCourses.map((course) => (
+        <CourseCardItem
+          key={course.courseId}
+          course={course}
+          smallerCard={smallerCard}
+        />
       ))}
     </div>
   );
 }
 
-function CourseCardItem({ course, smallerCard }: { course: Course, smallerCard: boolean }) {
-  const [imgSrc, setImgSrc] = useState(course.bannerImage);
+function CourseCardItem({
+  course,
+  smallerCard,
+}: {
+  course: Course;
+  smallerCard: boolean;
+}) {
+  const isAiml =
+    course.category === "AI/ML" ||
+    course.courseId >= 9 ||
+    ["Python", "Machine Learning", "Deep Learning", "PyTorch", "Generative"].some((k) =>
+      (course.tags || "").includes(k)
+    );
 
   return (
     <Link
       href={`/courses/${course.courseId}`}
-      className="group block rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden card-hover"
+      className="group flex flex-col justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5 hover:border-amber-500/40 hover:shadow-lg transition-all duration-200 cursor-pointer"
     >
-      {/* Thumbnail */}
-      <div className={cn(
-        "relative overflow-hidden bg-[var(--bg-panel)]",
-        smallerCard ? "h-[110px]" : "h-[180px]"
-      )}>
-        <Image
-          src={imgSrc ? imgSrc : "/cookie.png"}
-          alt={course.title}
-          fill
-          unoptimized
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={() => setImgSrc("/cookie.png")}
-        />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.12_0.01_264)] via-transparent to-transparent opacity-60" />
+      <div>
+        {/* Top Meta Bar */}
+        <div className="flex items-center justify-between gap-2 mb-3.5">
+          <CourseIcon tag={course.tags || course.title} size={36} />
 
-        {/* Level badge */}
-        {course.level && (
-          <div className="absolute top-3 left-3">
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs font-semibold border",
-              levelStyles[course.level].bg,
-              levelStyles[course.level].text,
-              levelStyles[course.level].border
-            )}>
-              {course.level}
-            </span>
-          </div>
-        )}
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {course.certificateEnabled !== false && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/25 flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5" /> Certificate
+              </span>
+            )}
 
-        {/* Chapters count */}
-        {course.chapters && course.chapters.length > 0 && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm border border-[var(--border-strong)]">
-            <BookOpen className="w-3 h-3 text-[var(--fg-muted)]" />
-            <span className="text-xs text-[var(--fg-muted)] font-medium">{course.chapters.length} ch</span>
+            {course.level && (
+              <span
+                className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider",
+                  levelStyles[course.level]?.bg || "bg-emerald-500/10",
+                  levelStyles[course.level]?.text || "text-emerald-500",
+                  levelStyles[course.level]?.border || "border-emerald-500/20"
+                )}
+              >
+                {course.level}
+              </span>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Title */}
+        <h3 className="font-bold text-base text-[var(--fg)] group-hover:text-amber-500 transition-colors line-clamp-1 mb-1.5">
+          {course.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-xs text-[var(--fg-muted)] line-clamp-2 leading-relaxed">
+          {course.description}
+        </p>
+
+        {/* Metadata subline */}
+        <div className="mt-3 flex items-center gap-3 text-[11px] text-[var(--fg-subtle)] font-medium">
+          {course.duration && (
+            <span>⏱ {course.duration}</span>
+          )}
+          {course.instructor && (
+            <span className="truncate max-w-[180px]">By {course.instructor.split(",")[0]}</span>
+          )}
+        </div>
       </div>
 
-      {/* Content */}
-      {!smallerCard && (
-        <div className="p-4">
-          <h3 className="font-bold text-[var(--fg)] mb-1.5 group-hover:text-amber-400 transition-colors line-clamp-1">
-            {course.title}
-          </h3>
-          <p className="text-sm text-[var(--fg-subtle)] line-clamp-2 leading-relaxed">
-            {course.description}
-          </p>
-        </div>
-      )}
-      {smallerCard && (
-        <div className="p-3">
-          <h3 className="font-semibold text-sm text-[var(--fg)] group-hover:text-amber-400 transition-colors line-clamp-1">
-            {course.title}
-          </h3>
-        </div>
-      )}
+      {/* Card Footer Bar */}
+      <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs">
+        <span className="text-[var(--fg-subtle)] font-medium">
+          {isAiml
+            ? "Python / AI Engine"
+            : course.editorType === "vanilla-ts"
+            ? "TypeScript Sandbox"
+            : course.editorType === "react"
+            ? "React 19 Runtime"
+            : course.editorType === "static"
+            ? "HTML / CSS Preview"
+            : "JavaScript Engine"}
+        </span>
+
+        <span className="font-semibold text-amber-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+          Open Track <ArrowRight className="w-3.5 h-3.5" />
+        </span>
+      </div>
     </Link>
   );
 }
-
-export default CourseList;

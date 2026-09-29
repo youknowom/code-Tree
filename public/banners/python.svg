@@ -1,0 +1,24 @@
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#0C1B1A"/>
+  <circle cx="400" cy="225" r="180" fill="#10B981" fill-opacity="0.08" filter="blur(60px)"/>
+  
+  <!-- Subtle Grid -->
+  <path d="M0 75H800M0 150H800M0 225H800M0 300H800M0 375H800" stroke="#163835" stroke-width="0.75" stroke-dasharray="4 6"/>
+  <path d="M100 0V450M200 0V450M300 0V450M400 0V450M500 0V450M600 0V450M700 0V450" stroke="#163835" stroke-width="0.75" stroke-dasharray="4 6"/>
+
+  <!-- Python Dual Snake Silhouette / Shield -->
+  <g transform="translate(335, 150) scale(1.3)">
+    <path d="M48 2C30 2 24 9 24 18V28H48V32H16C7 32 0 38 0 54C0 70 8 78 22 78H30V66C30 55 38 48 50 48H74V42C74 30 68 24 54 24H32V16C32 8 38 2 48 2Z" fill="#3B82F6"/>
+    <circle cx="34" cy="11" r="3.5" fill="#FFFFFF"/>
+    <path d="M52 98C70 98 76 91 76 82V72H52V68H84C93 68 100 62 100 46C100 30 92 22 78 22H70V34C70 45 62 52 50 52H26V58C26 70 32 76 46 76H68V84C68 92 62 98 52 98Z" fill="#FACC15"/>
+    <circle cx="66" cy="89" r="3.5" fill="#000000"/>
+  </g>
+
+  <!-- Badge Overlay -->
+  <rect x="48" y="44" width="130" height="32" rx="16" fill="#10B981" fill-opacity="0.15" stroke="#10B981" stroke-opacity="0.4"/>
+  <text x="113" y="65" fill="#34D399" font-family="system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1">PYTHON</text>
+
+  <!-- Title Bottom Left -->
+  <text x="48" y="380" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.5">Python Fundamentals</text>
+  <text x="48" y="408" fill="#94A3B8" font-family="system-ui, sans-serif" font-size="14" font-weight="500">Syntax · Lists & Dictionaries · Conditionals · OOP</text>
+</svg>

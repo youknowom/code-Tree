@@ -1,22 +1,21 @@
 import Link from "next/link";
-import Image from "next/image";
+import CodeTreeLogo from "@/components/CodeTreeLogo";
 import { Github, Twitter, MessageCircle, ArrowUpRight } from "lucide-react";
 
 const footerLinks = {
-    Learn: [
+    Curriculum: [
+        { label: "TypeScript Essentials", href: "/courses/5" },
+        { label: "React 19 Beginner", href: "/courses/1" },
+        { label: "Next.js Fullstack", href: "/courses/8" },
+        { label: "Tailwind CSS", href: "/courses/6" },
+        { label: "Python Programming", href: "/courses/7" },
+        { label: "JavaScript Core", href: "/courses/4" },
+    ],
+    Platform: [
         { label: "All Courses", href: "/courses" },
         { label: "Dashboard", href: "/dashboard" },
-        { label: "Pricing", href: "/pricing" },
-    ],
-    Company: [
-        { label: "About", href: "#" },
-        { label: "Blog", href: "#" },
-        { label: "Careers", href: "#" },
-    ],
-    Legal: [
-        { label: "Privacy Policy", href: "#" },
-        { label: "Terms of Service", href: "#" },
-        { label: "Cookie Policy", href: "#" },
+        { label: "Free Access", href: "/pricing" },
+        { label: "Contact & Feedback", href: "/contact" },
     ],
 };
 
@@ -30,11 +29,6 @@ const socialLinks = [
         href: "https://twitter.com",
         icon: <Twitter className="w-4 h-4" />,
         label: "Twitter",
-    },
-    {
-        href: "https://discord.gg/z7XVq8K48G",
-        icon: <MessageCircle className="w-4 h-4" />,
-        label: "Discord",
     },
 ];
 
@@ -55,7 +49,7 @@ export default function Footer() {
                         Ready to start coding?
                     </h2>
                     <p className="text-[var(--fg-subtle)] mb-8 max-w-md mx-auto">
-                        Join 50,000+ learners building real skills with hands-on exercises and instant feedback.
+                        Build practical web development skills with interactive in-browser exercises and instant verification.
                     </p>
                     <Link
                         href="/sign-up"
@@ -69,22 +63,14 @@ export default function Footer() {
 
             {/* Footer links */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
                     {/* Brand */}
                     <div className="lg:col-span-2">
                         <Link href="/" className="flex items-center gap-2.5 mb-4 group w-fit">
-                            <div className="relative w-9 h-9 rounded-xl overflow-hidden ring-1 ring-white/10 group-hover:ring-amber-400/40 transition-all">
-                                <Image
-                                    src="/logo.png"
-                                    alt="CodeTree logo"
-                                    fill
-                                    className="object-contain p-0.5"
-                                />
-                            </div>
-                            <span className="font-bold text-xl gradient-text-brand">CodeTree</span>
+                            <CodeTreeLogo size="lg" />
                         </Link>
                         <p className="text-sm text-[var(--fg-subtle)] leading-relaxed max-w-xs">
-                            The interactive coding platform where you learn by doing. Build real skills through hands-on exercises with instant feedback.
+                            The interactive coding platform where you learn by doing. Hands-on exercises, browser execution, and instant feedback.
                         </p>
                         {/* Social links */}
                         <div className="flex items-center gap-3 mt-5">
@@ -131,7 +117,7 @@ export default function Footer() {
                         © {new Date().getFullYear()} CodeTree. All rights reserved.
                     </p>
                     <p className="text-xs text-[var(--fg-subtle)]">
-                        CodeTree • v0.1.0
+                        Practice-Driven Web Development
                     </p>
                 </div>
             </div>

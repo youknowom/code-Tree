@@ -8,8 +8,8 @@ function ExploreMoreCourse() {
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-xl font-bold text-white">Explore Other Courses</h2>
-          <p className="text-sm text-[var(--fg-subtle)] mt-0.5">Discover what else you can learn</p>
+          <h2 className="text-lg font-bold text-[var(--fg)] tracking-tight">Explore More Tracks</h2>
+          <p className="text-xs text-[var(--fg-muted)] mt-0.5">Expand your developer stack</p>
         </div>
         <Link
           href="/courses"

@@ -2,6 +2,7 @@ import { db } from "@/config/db";
 import { courseChaptersTable } from "@/config/schema";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdmin } from "@/lib/adminAuth";
 
 const DATA = [
   {
@@ -507,6 +508,9 @@ const DATA = [
   },
 ];
 export async function GET(req: NextRequest) {
+  const auth = await verifyAdmin(req);
+  if (!auth.authorized) return auth.response!;
+
   try {
     const COURSE_ID = 2; // change per course
 

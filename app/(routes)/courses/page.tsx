@@ -1,64 +1,83 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { useState } from "react";
 import CourseList from "./_components/CourseList";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles, Search, Layers, Terminal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "All Courses",
-  description:
-    "Browse all CodeTree courses — HTML, CSS, JavaScript, React, Python, Gen AI, Machine Learning, and more. Structured learning paths for every skill level.",
-  alternates: { canonical: "/courses" },
-};
+const CATEGORIES = [
+  { id: "all", label: "All Tracks" },
+  { id: "aiml", label: "AI & Machine Learning" },
+  { id: "deeplearning", label: "Deep Learning & PyTorch" },
+  { id: "genai", label: "Generative AI & LLMs" },
+  { id: "beginner", label: "Beginner" },
+  { id: "intermediate", label: "Intermediate" },
+  { id: "advanced", label: "Advanced" },
+  { id: "web", label: "Web Engineering" },
+];
 
+export default function CoursesPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
-export default function Page() {
   return (
-    <div className="min-h-screen bg-[var(--bg-page)]">
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden border-b border-[var(--border-default)]">
-        {/* Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `linear-gradient(oklch(1 0 0 / 0.5) 1px, transparent 1px), linear-gradient(to right, oklch(1 0 0 / 0.5) 1px, transparent 1px)`,
-              backgroundSize: "40px 40px",
-            }}
-          />
-          <div
-            className="absolute -top-20 -left-20 w-[600px] h-[400px] rounded-full opacity-20 blur-[80px]"
-            style={{ background: "radial-gradient(ellipse, oklch(0.76 0.18 85) 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute -bottom-10 right-0 w-[400px] h-[300px] rounded-full opacity-15 blur-[80px]"
-            style={{ background: "radial-gradient(ellipse, oklch(0.65 0.22 265) 0%, transparent 70%)" }}
-          />
-        </div>
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <div className="chip mb-5">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--fg)] pb-24">
+      {/* ── Page Header ── */}
+      <div className="relative border-b border-[var(--border-default)] bg-[var(--bg-elevated)]/30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-18">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/25 bg-amber-500/10 text-amber-500 dark:text-amber-400 text-xs font-semibold mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            All Courses
+            <span>Interactive Curriculum · 12 Specialization Tracks · Verified Certificates</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[var(--fg)] mb-4 leading-tight">
-            Explore All{" "}
-            <span className="gradient-text-brand">Courses</span>
+
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--fg)]">
+            Explore All Tracks
           </h1>
-          <p className="text-lg text-[var(--fg-muted)] max-w-xl leading-relaxed">
-            Discover structured courses to learn, build skills, and advance your career — from beginner to advanced.
+          <p className="mt-3 text-sm sm:text-base text-[var(--fg-muted)] max-w-xl leading-relaxed">
+            Choose a guided path, practice code in live interactive sandboxes, complete capstone projects, and earn verified certificates of completion.
           </p>
+
+          {/* Search Bar & Filter Controls */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-[var(--fg-subtle)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search tracks (e.g. TypeScript, React, Python)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] text-sm text-[var(--fg)] placeholder:text-[var(--fg-subtle)] focus:outline-hidden focus:border-amber-500/60 transition-colors shadow-xs"
+              />
+            </div>
+
+            {/* Category Pills */}
+            <div className="flex flex-wrap gap-1.5">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={cn(
+                    "px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                    selectedCategory === cat.id
+                      ? "bg-amber-500 text-slate-950 shadow-xs"
+                      : "bg-[var(--bg-card)] border border-[var(--border-default)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:border-amber-500/30"
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Course Grid */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-[var(--fg-subtle)] text-sm font-medium">
-            <BookOpen className="w-4 h-4" />
-            All available courses
-          </div>
-        </div>
-        <CourseList />
+      {/* ── Courses Grid Content ── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10">
+        <CourseList
+          searchQuery={searchQuery}
+          selectedCategory={selectedCategory}
+        />
       </div>
     </div>
   );
